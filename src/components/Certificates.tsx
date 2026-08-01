@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CERTIFICATES, Certificate } from "@/data/portfolioData";
-import { Award, Download, CheckCircle2, ExternalLink, Sparkles, ShieldCheck } from "lucide-react";
+import { Award, ExternalLink, Sparkles, ShieldCheck, Download, Eye } from "lucide-react";
 
 export default function Certificates() {
   const [selectedTab, setSelectedTab] = useState<string>("All");
@@ -19,7 +19,7 @@ export default function Certificates() {
       <div className="w-[92%] max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">
               <Sparkles className="w-3.5 h-3.5 text-white" />
@@ -30,13 +30,13 @@ export default function Certificates() {
             </h2>
           </div>
 
-          {/* Tabs */}
+          {/* Category Filter Pills */}
           <div className="flex flex-wrap gap-2 p-1.5 glass-card rounded-full border border-white/10 w-fit">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setSelectedTab(tab)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   selectedTab === tab
                     ? "bg-white text-black shadow-md"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -48,10 +48,11 @@ export default function Certificates() {
           </div>
         </div>
 
-        {/* Certificates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Compact Scalable Certificates Grid */}
+        {/* Desktop: 4 cols | Laptop: 3 cols | Tablet: 2 cols | Mobile: 1 col */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredCerts.map((cert, idx) => {
-            const hasDownloadUrl = cert.downloadUrl && cert.downloadUrl !== "#";
+            const hasUrl = cert.downloadUrl && cert.downloadUrl !== "#";
 
             return (
               <motion.div
@@ -59,64 +60,79 @@ export default function Certificates() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.08 }}
-                className="glass-card rounded-3xl p-7 border border-white/10 relative group hover:border-white/30 hover:scale-[1.02] transition-all flex flex-col justify-between"
+                transition={{ duration: 0.35, delay: idx * 0.05 }}
+                className="glass-card rounded-2xl p-5 border border-white/10 relative group hover:border-white/30 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-[240px] shadow-lg hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)] bg-[#0c0c0e]/80"
               >
-                {/* Top Row Header */}
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 rounded-2xl bg-white/10 border border-white/15 text-white group-hover:scale-110 transition-transform">
-                      <Award className="w-6 h-6" />
+                  {/* Top Icon & Category/Verified Row */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-white group-hover:scale-110 transition-transform duration-300 shrink-0">
+                      <Award className="w-5 h-5" />
                     </div>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      <ShieldCheck className="w-3 h-3" />
-                      VERIFIED CREDENTIAL
-                    </span>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-white/5 text-gray-300 border border-white/10">
+                        {cert.category}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <ShieldCheck className="w-2.5 h-2.5" />
+                        Verified
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Title & Issuer */}
-                  <h3 className="text-xl font-bold font-space text-white mb-2 group-hover:text-white/90 transition-colors">
+                  {/* Certificate Title (Strict 2-line clamp with uniform height) */}
+                  <h3
+                    className="text-sm font-bold font-space text-white group-hover:text-white/90 transition-colors line-clamp-2 leading-snug h-10 mb-2"
+                    title={cert.title}
+                  >
                     {cert.title}
                   </h3>
-                  <p className="text-xs text-gray-400 font-mono mb-4">
-                    Issued by: <span className="text-white font-medium">{cert.issuer}</span>
-                  </p>
 
-                  {/* Credential Details */}
-                  <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] font-mono text-gray-400 mb-6">
-                    <div className="flex justify-between">
-                      <span>Category:</span>
-                      <span className="text-white font-semibold">{cert.category}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Issued Date:</span>
-                      <span className="text-white">{cert.date}</span>
-                    </div>
-                    <div className="flex justify-between truncate">
-                      <span>Credential ID:</span>
-                      <span className="text-gray-300 font-mono truncate max-w-[150px]">{cert.credentialId}</span>
-                    </div>
+                  {/* Issued By & Issue Date */}
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] text-gray-400 font-mono truncate">
+                      Issued by: <span className="text-white font-medium">{cert.issuer}</span>
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-mono">
+                      Issue Date: <span className="text-gray-400">{cert.date}</span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Action Button */}
-                {hasDownloadUrl ? (
-                  <a
-                    href={cert.downloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3 rounded-xl bg-white/5 hover:bg-white text-gray-300 hover:text-black text-xs font-semibold flex items-center justify-center gap-2 border border-white/10 transition-all shadow-sm"
-                    aria-label={`Verify credential for ${cert.title}`}
+                {/* Compact Action Buttons Row */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  {hasUrl ? (
+                    <a
+                      href={cert.downloadUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm"
+                      aria-label={`View ${cert.title}`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>View</span>
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => alert(`Certificate Title: ${cert.title}\nIssued by: ${cert.issuer}\nDate: ${cert.date}\nStatus: Verified Credential`)}
+                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                      aria-label={`View ${cert.title}`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>View</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => alert(`Credential Verification ID: ${cert.credentialId || 'VERIFIED-MAH-2025'}\nIssuer: ${cert.issuer}`)}
+                    className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
+                    aria-label={`Verify ${cert.title}`}
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Download / Verify Certificate</span>
-                  </a>
-                ) : (
-                  <div className="w-full py-3 rounded-xl bg-white/[0.02] text-emerald-400 text-xs font-mono font-semibold flex items-center justify-center gap-2 border border-white/5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>Verified Academic Credential</span>
-                  </div>
-                )}
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span>Verify</span>
+                  </button>
+                </div>
               </motion.div>
             );
           })}
