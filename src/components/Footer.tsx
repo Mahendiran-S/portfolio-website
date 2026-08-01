@@ -1,10 +1,14 @@
 "use client";
 
-import { PERSONAL_INFO } from "@/data/portfolioData";
+import type { SanityProfile } from "@/sanity/types";
 import { ArrowUp, Mail, Heart } from "lucide-react";
 import { GithubIcon, LinkedinIcon, InstagramIcon } from "@/components/SocialIcons";
 
-export default function Footer() {
+interface FooterProps {
+  profile: SanityProfile;
+}
+
+export default function Footer({ profile }: FooterProps) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -20,14 +24,14 @@ export default function Footer() {
             Mahendiran<span className="text-gray-500">.dev</span>
           </div>
           <p className="text-xs text-gray-500 font-mono">
-            © {new Date().getFullYear()} Mahendiran S. Crafted with Next.js 15, Framer Motion & Tailwind CSS.
+            © {new Date().getFullYear()} {profile.name}. Crafted with Next.js 15, Framer Motion & Tailwind CSS.
           </p>
         </div>
 
-        {/* Center: Quick Links */}
+        {/* Center: Social Links */}
         <div className="flex items-center gap-4">
           <a
-            href={PERSONAL_INFO.github}
+            href={profile.githubUrl ?? '#'}
             target="_blank"
             rel="noreferrer"
             className="p-3 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white border border-white/10 transition-all"
@@ -36,7 +40,7 @@ export default function Footer() {
             <GithubIcon className="w-4 h-4" />
           </a>
           <a
-            href={PERSONAL_INFO.linkedin}
+            href={profile.linkedinUrl ?? '#'}
             target="_blank"
             rel="noreferrer"
             className="p-3 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white border border-white/10 transition-all"
@@ -45,14 +49,14 @@ export default function Footer() {
             <LinkedinIcon className="w-4 h-4" />
           </a>
           <a
-            href={`mailto:${PERSONAL_INFO.email}`}
+            href={`mailto:${profile.email ?? ''}`}
             className="p-3 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white border border-white/10 transition-all"
             title="Email"
           >
             <Mail className="w-4 h-4" />
           </a>
           <a
-            href={PERSONAL_INFO.instagram}
+            href={profile.instagramUrl ?? '#'}
             target="_blank"
             rel="noreferrer"
             className="p-3 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white border border-white/10 transition-all"
@@ -62,7 +66,7 @@ export default function Footer() {
           </a>
         </div>
 
-        {/* Right: Magnetic Back to Top Button */}
+        {/* Right: Back to Top */}
         <button
           onClick={scrollToTop}
           className="group px-4 py-2.5 rounded-full bg-white/5 hover:bg-white text-gray-300 hover:text-black text-xs font-semibold font-mono flex items-center gap-2 border border-white/10 transition-all shadow-md"

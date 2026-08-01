@@ -1,20 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { EXPERIENCES } from "@/data/portfolioData";
 import { Briefcase, CheckCircle2, Sparkles, Code, Cpu } from "lucide-react";
+import type { SanityExperience } from "@/sanity/types";
 
-export default function Experience() {
-  const exp = EXPERIENCES[0];
+interface ExperienceProps {
+  experiences: SanityExperience[];
+}
 
-  const modules = [
-    { name: "Expense Management System", desc: "Automated claim submission, audit trail logs, multi-currency processing" },
-    { name: "Salary Deduction Engine", desc: "Enterprise payroll calculation logic integrating biometric attendance & loan logic" },
-    { name: "Invoice Automation", desc: "Dynamic vector PDF billing report generator and automated dispatch system" },
-    { name: "Audit Dashboard", desc: "Real-time query performance optimized data visualizer for corporate accounting" },
-    { name: "Employee Management", desc: "Role-based access matrix and profile database with status tracking" },
-    { name: "Excel Automation", desc: "High-volume bulk Excel parsing and automated financial data validation tools" },
-  ];
+// Static modules — these describe the internship modules and don't change unless hardcoded
+const MODULES = [
+  { name: "Expense Management System", desc: "Automated claim submission, audit trail logs, multi-currency processing" },
+  { name: "Salary Deduction Engine", desc: "Enterprise payroll calculation logic integrating biometric attendance & loan logic" },
+  { name: "Invoice Automation", desc: "Dynamic vector PDF billing report generator and automated dispatch system" },
+  { name: "Audit Dashboard", desc: "Real-time query performance optimized data visualizer for corporate accounting" },
+  { name: "Employee Management", desc: "Role-based access matrix and profile database with status tracking" },
+  { name: "Excel Automation", desc: "High-volume bulk Excel parsing and automated financial data validation tools" },
+];
+
+export default function Experience({ experiences }: ExperienceProps) {
+  const exp = experiences[0];
+
+  if (!exp) {
+    return (
+      <section id="experience" className="py-28 relative">
+        <div className="w-[92%] max-w-7xl mx-auto text-center text-gray-500 py-20 font-mono text-sm">
+          No experience data available yet.
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="experience" className="py-28 relative">
@@ -50,7 +66,6 @@ export default function Experience() {
               </div>
               <h3 className="text-3xl font-bold text-white font-space tracking-tight">{exp.role}</h3>
             </div>
-
             <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-gray-300 w-fit">
               <span>{exp.period}</span>
             </div>
@@ -62,9 +77,8 @@ export default function Experience() {
               <Cpu className="w-4 h-4 text-white" />
               Core Modules Engineered & Built:
             </h4>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {modules.map((mod) => (
+              {MODULES.map((mod) => (
                 <div
                   key={mod.name}
                   className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/25 transition-all group"
@@ -73,9 +87,7 @@ export default function Experience() {
                     <CheckCircle2 className="w-4 h-4 text-white shrink-0 group-hover:scale-110 transition-transform" />
                     <h5 className="font-bold text-white text-sm tracking-tight">{mod.name}</h5>
                   </div>
-                  <p className="text-xs text-gray-400 leading-relaxed pl-6">
-                    {mod.desc}
-                  </p>
+                  <p className="text-xs text-gray-400 leading-relaxed pl-6">{mod.desc}</p>
                 </div>
               ))}
             </div>
@@ -111,9 +123,7 @@ export default function Experience() {
               </span>
             ))}
           </div>
-
         </motion.div>
-
       </div>
     </section>
   );

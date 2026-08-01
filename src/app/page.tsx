@@ -1,58 +1,37 @@
-"use client";
+// Server Component – fetches all CMS data at request time (ISR)
+import { Suspense } from 'react';
+import {
+  fetchProfile,
+  fetchCertificates,
+  fetchProjects,
+  fetchSkills,
+  fetchExperiences,
+  fetchResume,
+} from '@/lib/cmsData';
+import HomeClient from './HomeClient';
 
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import About from "@/components/About";
-import Skills from "@/components/Skills";
-import Experience from "@/components/Experience";
-import Projects from "@/components/Projects";
-import Certificates from "@/components/Certificates";
-import GithubSection from "@/components/GithubSection";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
-import ResumeModal from "@/components/ResumeModal";
+// ISR: revalidate every 60 seconds so new Sanity publishes appear quickly
+export const revalidate = 60;
 
-export default function Home() {
-  const [isResumeOpen, setIsResumeOpen] = useState(false);
-
-  const handleOpenResume = () => setIsResumeOpen(true);
-  const handleCloseResume = () => setIsResumeOpen(false);
+export default async function Home() {
+  const [profile, certificates, projects, skills, experiences, resume] =
+    await Promise.all([
+      fetchProfile(),
+      fetchCertificates(),
+      fetchProjects(),
+      fetchSkills(),
+      fetchExperiences(),
+      fetchResume(),
+    ]);
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white selection:bg-white selection:text-black">
-      {/* Sticky Glass Navbar */}
-      <Navbar onOpenResume={handleOpenResume} />
-
-      {/* Hero Section */}
-      <Hero onOpenResume={handleOpenResume} />
-
-      {/* About Section */}
-      <About />
-
-      {/* Skills Section */}
-      <Skills />
-
-      {/* Experience Section */}
-      <Experience />
-
-      {/* Projects Section */}
-      <Projects />
-
-      {/* Certificates Section */}
-      <Certificates />
-
-      {/* GitHub Open Source Telemetry Section */}
-      <GithubSection />
-
-      {/* Contact Section */}
-      <Contact onOpenResume={handleOpenResume} />
-
-      {/* Minimal Luxury Footer */}
-      <Footer />
-
-      {/* Interactive Resume Modal */}
-      <ResumeModal isOpen={isResumeOpen} onClose={handleCloseResume} />
-    </main>
+    <HomeClient
+      profile={profile}
+      certificates={certificates}
+      projects={projects}
+      skills={skills}
+      experiences={experiences}
+      resume={resume}
+    />
   );
 }

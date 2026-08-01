@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { PERSONAL_INFO, STATS, TIMELINE_ITEMS } from "@/data/portfolioData";
+import { STATS, TIMELINE_ITEMS } from "@/data/portfolioData";
+import type { SanityProfile } from "@/sanity/types";
 import { GraduationCap, Briefcase, Award, BookOpen, Target, Sparkles } from "lucide-react";
 
-export default function About() {
+interface AboutProps {
+  profile: SanityProfile;
+}
+
+export default function About({ profile }: AboutProps) {
   const [activeTab, setActiveTab] = useState<string>("All");
 
   const categories = ["All", "Education", "Internship", "Achievement", "Certification"];
@@ -46,11 +51,11 @@ export default function About() {
             </h3>
 
             <p className="text-gray-300 text-base leading-relaxed mb-6">
-              {PERSONAL_INFO.aboutBio}
+              {profile.aboutBio}
             </p>
 
             <p className="text-gray-400 text-sm leading-relaxed mb-8">
-              Currently pursuing my B.Tech in Information Technology at <span className="text-white font-medium">{PERSONAL_INFO.college}</span> in Tamil Nadu. I focus on developing real-world applications with robust backend services, intuitive frontend architectures, and optimized performance.
+              Currently pursuing my B.Tech in Information Technology at <span className="text-white font-medium">{profile.college}</span> in Tamil Nadu. I focus on developing real-world applications with robust backend services, intuitive frontend architectures, and optimized performance.
             </p>
 
             {/* Currently Looking For List */}
@@ -60,7 +65,7 @@ export default function About() {
                 Currently Looking For:
               </h4>
               <div className="flex flex-wrap gap-2.5">
-                {PERSONAL_INFO.seeking.map((role) => (
+                {['Software Engineer Internships', 'Full-Stack Developer Roles', 'Freelance Engineering Contracts'].map((role) => (
                   <span
                     key={role}
                     className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all"
@@ -88,8 +93,8 @@ export default function About() {
               <div className="relative w-72 h-72 sm:w-80 sm:h-80 rounded-full p-2 bg-gradient-to-b from-white/30 via-white/10 to-transparent border border-white/20 shadow-2xl">
                 <div className="w-full h-full rounded-full overflow-hidden relative border border-white/30">
                   <img
-                    src="/mahendiran-profile.png"
-                    alt="Mahendiran S"
+                    src={profile.profilePhotoUrl ?? '/mahendiran-profile.png'}
+                    alt={profile.name}
                     className="w-full h-full object-cover object-top hover:scale-105 transition-all duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />

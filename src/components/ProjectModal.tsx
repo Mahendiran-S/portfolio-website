@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Project } from "@/data/portfolioData";
+import type { SanityProject } from "@/sanity/types";
 import { X, ExternalLink, CheckCircle2, Layers, Cpu, Sparkles } from "lucide-react";
 import { GithubIcon } from "@/components/SocialIcons";
 
 interface ProjectModalProps {
-  project: Project | null;
+  project: SanityProject | null;
   onClose: () => void;
 }
 
@@ -90,7 +90,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
             {/* Banner Image */}
             <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden border border-white/10">
               <img
-                src={project.image}
+                src={project.imageUrl ?? ''}
                 alt={project.title}
                 className="w-full h-full object-cover"
               />
@@ -119,7 +119,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 Key Features & Engineering Highlights
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {project.features.map((feat, idx) => (
+                {(project.features ?? []).map((feat, idx) => (
                   <div key={idx} className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3">
                     <span className="font-mono text-white text-xs font-bold mt-0.5">•</span>
                     <span className="text-xs text-gray-300 leading-relaxed">{feat}</span>
@@ -135,7 +135,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 System Architecture
               </h3>
               <p className="text-xs text-gray-300 font-mono leading-relaxed">
-                {project.architectureDetails}
+                {project.architectureDetails ?? 'No architecture details provided.'}
               </p>
             </div>
 

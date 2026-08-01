@@ -2,17 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CERTIFICATES, Certificate } from "@/data/portfolioData";
-import { Award, ExternalLink, Sparkles, ShieldCheck, Download, Eye } from "lucide-react";
+import { Award, ExternalLink, Sparkles, ShieldCheck, Eye } from "lucide-react";
+import type { SanityCertificate } from "@/sanity/types";
 
-export default function Certificates() {
+interface CertificatesProps {
+  certificates: SanityCertificate[];
+}
+
+export default function Certificates({ certificates }: CertificatesProps) {
   const [selectedTab, setSelectedTab] = useState<string>("All");
 
   const tabs = ["All", "AWS", "NPTEL", "Internship", "Hackathons", "Workshops"];
 
   const filteredCerts = selectedTab === "All"
-    ? CERTIFICATES
-    : CERTIFICATES.filter((c) => c.category === selectedTab);
+    ? certificates
+    : certificates.filter((c) => c.category === selectedTab);
 
   return (
     <section id="certificates" className="py-28 relative">
@@ -49,95 +53,87 @@ export default function Certificates() {
         </div>
 
         {/* Compact Scalable Certificates Grid */}
-        {/* Desktop: 4 cols | Laptop: 3 cols | Tablet: 2 cols | Mobile: 1 col */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredCerts.map((cert, idx) => {
-            const hasUrl = cert.downloadUrl && cert.downloadUrl !== "#";
-
-            return (
-              <motion.div
-                key={cert.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: idx * 0.05 }}
-                className="glass-card rounded-2xl p-5 border border-white/10 relative group hover:border-white/30 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-[240px] shadow-lg hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)] bg-[#0c0c0e]/80"
-              >
-                <div>
-                  {/* Top Icon & Category/Verified Row */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-white group-hover:scale-110 transition-transform duration-300 shrink-0">
-                      <Award className="w-5 h-5" />
+          {filteredCerts.length === 0 ? (
+            <div className="col-span-full text-center py-20 text-gray-500 font-mono text-sm">
+              No certificates in this category yet.
+            </div>
+          ) : (
+            filteredCerts.map((cert, idx) => {
+              const hasUrl = cert.downloadUrl && cert.downloadUrl !== "#";
+              return (
+                <motion.div
+                  key={cert.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: idx * 0.05 }}
+                  className="glass-card rounded-2xl p-5 border border-white/10 relative group hover:border-white/30 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-[240px] shadow-lg hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)] bg-[#0c0c0e]/80"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-white group-hover:scale-110 transition-transform duration-300 shrink-0">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-white/5 text-gray-300 border border-white/10">
+                          {cert.category}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                          <ShieldCheck className="w-2.5 h-2.5" />
+                          Verified
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-white/5 text-gray-300 border border-white/10">
-                        {cert.category}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                        <ShieldCheck className="w-2.5 h-2.5" />
-                        Verified
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Certificate Title (Strict 2-line clamp with uniform height) */}
-                  <h3
-                    className="text-sm font-bold font-space text-white group-hover:text-white/90 transition-colors line-clamp-2 leading-snug h-10 mb-2"
-                    title={cert.title}
-                  >
-                    {cert.title}
-                  </h3>
-
-                  {/* Issued By & Issue Date */}
-                  <div className="space-y-0.5">
-                    <p className="text-[11px] text-gray-400 font-mono truncate">
-                      Issued by: <span className="text-white font-medium">{cert.issuer}</span>
-                    </p>
-                    <p className="text-[10px] text-gray-500 font-mono">
-                      Issue Date: <span className="text-gray-400">{cert.date}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Compact Action Buttons Row */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                  {hasUrl ? (
-                    <a
-                      href={cert.downloadUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm"
-                      aria-label={`View ${cert.title}`}
+                    <h3
+                      className="text-sm font-bold font-space text-white group-hover:text-white/90 transition-colors line-clamp-2 leading-snug h-10 mb-2"
+                      title={cert.title}
                     >
-                      <Eye className="w-3 h-3" />
-                      <span>View</span>
-                    </a>
-                  ) : (
+                      {cert.title}
+                    </h3>
+
+                    <div className="space-y-0.5">
+                      <p className="text-[11px] text-gray-400 font-mono truncate">
+                        Issued by: <span className="text-white font-medium">{cert.issuer}</span>
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-mono">
+                        Issue Date: <span className="text-gray-400">{cert.date}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                    {hasUrl ? (
+                      <a
+                        href={cert.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>View</span>
+                      </a>
+                    ) : (
+                      <button
+                        className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>View</span>
+                      </button>
+                    )}
                     <button
-                      onClick={() => alert(`Certificate Title: ${cert.title}\nIssued by: ${cert.issuer}\nDate: ${cert.date}\nStatus: Verified Credential`)}
-                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
-                      aria-label={`View ${cert.title}`}
+                      className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
                     >
-                      <Eye className="w-3 h-3" />
-                      <span>View</span>
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                      <span>Verify</span>
                     </button>
-                  )}
-
-                  <button
-                    onClick={() => alert(`Credential Verification ID: ${cert.credentialId || 'VERIFIED-MAH-2025'}\nIssuer: ${cert.issuer}`)}
-                    className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
-                    aria-label={`Verify ${cert.title}`}
-                  >
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    <span>Verify</span>
-                  </button>
-                </div>
-              </motion.div>
-            );
-          })}
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </div>
-
       </div>
     </section>
   );

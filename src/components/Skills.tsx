@@ -2,61 +2,50 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { SKILLS, Skill } from "@/data/portfolioData";
 import { 
-  FileCode, 
-  Palette, 
-  Code2, 
-  FileSpreadsheet, 
-  Atom, 
-  Layers, 
-  Sparkles, 
-  Server, 
-  Workflow, 
-  Flame, 
-  Database, 
-  Coffee, 
-  Terminal, 
-  GitBranch, 
-  Laptop, 
-  Send 
+  FileCode, Palette, Code2, FileSpreadsheet, Atom, Layers, Sparkles,
+  Server, Workflow, Flame, Database, Coffee, Terminal, GitBranch, Laptop, Send
 } from "lucide-react";
 import { GithubIcon, FigmaIcon } from "@/components/SocialIcons";
+import type { SanitySkill } from "@/sanity/types";
 
-export default function Skills() {
+interface SkillsProps {
+  skills: SanitySkill[];
+}
+
+function getIcon(iconName: string) {
+  const props = { className: "w-5 h-5 text-white" };
+  switch (iconName) {
+    case "FileCode": return <FileCode {...props} />;
+    case "Palette": return <Palette {...props} />;
+    case "Code2": return <Code2 {...props} />;
+    case "FileSpreadsheet": return <FileSpreadsheet {...props} />;
+    case "Atom": return <Atom {...props} />;
+    case "Layers": return <Layers {...props} />;
+    case "Sparkles": return <Sparkles {...props} />;
+    case "Server": return <Server {...props} />;
+    case "Workflow": return <Workflow {...props} />;
+    case "Flame": return <Flame {...props} />;
+    case "Database": return <Database {...props} />;
+    case "Coffee": return <Coffee {...props} />;
+    case "Terminal": return <Terminal {...props} />;
+    case "GitBranch": return <GitBranch {...props} />;
+    case "Github": return <GithubIcon {...props} />;
+    case "Laptop": return <Laptop {...props} />;
+    case "Send": return <Send {...props} />;
+    case "Figma": return <FigmaIcon {...props} />;
+    default: return <Code2 {...props} />;
+  }
+}
+
+export default function Skills({ skills }: SkillsProps) {
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Frontend' | 'Backend' | 'Tools'>('All');
-
-  // Map icon names to Lucide icons
-  const getIcon = (iconName: string) => {
-    const props = { className: "w-5 h-5 text-white" };
-    switch (iconName) {
-      case "FileCode": return <FileCode {...props} />;
-      case "Palette": return <Palette {...props} />;
-      case "Code2": return <Code2 {...props} />;
-      case "FileSpreadsheet": return <FileSpreadsheet {...props} />;
-      case "Atom": return <Atom {...props} />;
-      case "Layers": return <Layers {...props} />;
-      case "Sparkles": return <Sparkles {...props} />;
-      case "Server": return <Server {...props} />;
-      case "Workflow": return <Workflow {...props} />;
-      case "Flame": return <Flame {...props} />;
-      case "Database": return <Database {...props} />;
-      case "Coffee": return <Coffee {...props} />;
-      case "Terminal": return <Terminal {...props} />;
-      case "GitBranch": return <GitBranch {...props} />;
-      case "Github": return <GithubIcon {...props} />;
-      case "Laptop": return <Laptop {...props} />;
-      case "Send": return <Send {...props} />;
-      case "Figma": return <FigmaIcon {...props} />;
-      default: return <Code2 {...props} />;
-    }
-  };
 
   const categories: Array<'All' | 'Frontend' | 'Backend' | 'Tools'> = ['All', 'Frontend', 'Backend', 'Tools'];
 
   const filteredSkills = selectedCategory === 'All'
-    ? SKILLS
-    : SKILLS.filter((skill) => skill.category === selectedCategory);
+    ? skills
+    : skills.filter((skill) => skill.category === selectedCategory);
 
   return (
     <section id="skills" className="py-28 relative">

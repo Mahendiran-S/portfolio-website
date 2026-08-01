@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { PERSONAL_INFO } from "@/data/portfolioData";
+import type { SanityProfile } from "@/sanity/types";
 import { Mail, Phone, FileText, Send, CheckCircle2, Sparkles, AlertCircle, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
 import { LinkedinIcon, GithubIcon, InstagramIcon } from "@/components/SocialIcons";
 
 interface ContactProps {
   onOpenResume: () => void;
+  profile: SanityProfile;
 }
 
 interface FormState {
@@ -37,7 +38,7 @@ const sanitizeInput = (input: string): string => {
     .replace(/\//g, "&#x2F;");
 };
 
-export default function Contact({ onOpenResume }: ContactProps) {
+export default function Contact({ onOpenResume, profile }: ContactProps) {
   const [formData, setFormData] = useState<FormState>({
     name: "",
     email: "",
@@ -221,32 +222,32 @@ export default function Contact({ onOpenResume }: ContactProps) {
   const contactCards = [
     {
       label: "Email Direct",
-      value: PERSONAL_INFO.email,
-      href: `mailto:${PERSONAL_INFO.email}`,
+      value: profile.email ?? 'mahendirans002@gmail.com',
+      href: `mailto:${profile.email ?? ''}`,
       icon: <Mail className="w-5 h-5 text-white" />,
     },
     {
       label: "LinkedIn Profile",
       value: "linkedin.com/in/mahendiran-s",
-      href: PERSONAL_INFO.linkedin,
+      href: profile.linkedinUrl ?? '#',
       icon: <LinkedinIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "GitHub Account",
       value: "github.com/Mahendiran-S",
-      href: PERSONAL_INFO.github,
+      href: profile.githubUrl ?? '#',
       icon: <GithubIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "Instagram",
       value: "@toxin_artist_0210",
-      href: PERSONAL_INFO.instagram,
+      href: profile.instagramUrl ?? '#',
       icon: <InstagramIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "Phone / WhatsApp",
-      value: PERSONAL_INFO.phone,
-      href: `tel:${PERSONAL_INFO.phone}`,
+      value: profile.phone ?? '+91 86107 74327',
+      href: `tel:${profile.phone ?? ''}`,
       icon: <Phone className="w-5 h-5 text-white" />,
     },
     {

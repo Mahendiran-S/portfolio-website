@@ -8,9 +8,10 @@ import { GithubIcon, LinkedinIcon } from "@/components/SocialIcons";
 interface ResumeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  resumeUrl?: string;
 }
 
-export default function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
+export default function ResumeModal({ isOpen, onClose, resumeUrl = '/Mahendiran_S_Resume.pdf' }: ResumeModalProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Lock background body scrolling when modal is active
@@ -106,8 +107,8 @@ export default function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
 
               {/* Direct Download Button */}
               <a
-                href="/Mahendiran_S_Resume.pdf"
-                download="Mahendiran_S_Resume.pdf"
+                href={resumeUrl}
+                download
                 className="px-4 py-1.5 rounded-full bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center gap-1.5 shadow-md"
               >
                 <Download className="w-3.5 h-3.5" />

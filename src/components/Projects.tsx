@@ -2,21 +2,25 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { PROJECTS, Project } from "@/data/portfolioData";
+import type { SanityProject } from "@/sanity/types";
 import ProjectModal from "./ProjectModal";
 import { ExternalLink, BookOpen, Sparkles, AlertCircle } from "lucide-react";
 import { GithubIcon } from "@/components/SocialIcons";
 
-export default function Projects() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+interface ProjectsProps {
+  projects: SanityProject[];
+}
+
+export default function Projects({ projects }: ProjectsProps) {
+  const [selectedProject, setSelectedProject] = useState<SanityProject | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   const categories = ["All", "Featured", "Full Stack Application", "Web Application", "Design & Full Stack"];
 
   const filteredProjects = filter === "All"
-    ? PROJECTS
-    : PROJECTS.filter((p) => p.status === filter || p.category === filter);
+    ? projects
+    : projects.filter((p) => p.status === filter || p.category === filter);
 
   const handleImageError = (id: string) => {
     setFailedImages((prev) => ({ ...prev, [id]: true }));
@@ -82,7 +86,7 @@ export default function Projects() {
                     </div>
                   ) : (
                     <img
-                      src={project.image}
+                      src={project.imageUrl ?? ''}
                       alt={`Screenshot preview of ${project.title}`}
                       loading="lazy"
                       onError={() => handleImageError(project.id)}

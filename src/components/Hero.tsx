@@ -2,15 +2,16 @@
 
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { PERSONAL_INFO } from "@/data/portfolioData";
+import type { SanityProfile } from "@/sanity/types";
 import { Download, ArrowRight, Mail, MapPin, GraduationCap, CheckCircle2, Sparkles } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/SocialIcons";
 
 interface HeroProps {
+  profile: SanityProfile;
   onOpenResume?: () => void;
 }
 
-export default function Hero({ onOpenResume }: HeroProps) {
+export default function Hero({ profile, onOpenResume }: HeroProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -74,15 +75,15 @@ export default function Hero({ onOpenResume }: HeroProps) {
 
           {/* Subheading */}
           <p className="text-lg sm:text-xl text-gray-400 font-normal max-w-2xl leading-relaxed mb-8">
-            {PERSONAL_INFO.tagline}
+            {profile.tagline}
           </p>
 
           {/* Primary Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 mb-10">
             {/* Direct Browser Download anchor */}
             <a
-              href="/Mahendiran_S_Resume.pdf"
-              download="Mahendiran_S_Resume.pdf"
+              href={profile.resumeUrl ?? '/Mahendiran_S_Resume.pdf'}
+              download
               className="group px-7 py-3.5 rounded-full bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-all duration-300 flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:shadow-[0_0_40px_rgba(255,255,255,0.45)]"
             >
               <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
@@ -103,7 +104,7 @@ export default function Hero({ onOpenResume }: HeroProps) {
             <span className="text-xs text-gray-500 font-mono uppercase tracking-wider">Connect:</span>
             <div className="flex items-center gap-3">
               <a
-                href={PERSONAL_INFO.github}
+                href={profile.githubUrl ?? '#'}
                 target="_blank"
                 rel="noreferrer"
                 className="p-2.5 rounded-full bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white border border-white/10 transition-all"
@@ -112,7 +113,7 @@ export default function Hero({ onOpenResume }: HeroProps) {
                 <GithubIcon className="w-4 h-4" />
               </a>
               <a
-                href={PERSONAL_INFO.linkedin}
+                href={profile.linkedinUrl ?? '#'}
                 target="_blank"
                 rel="noreferrer"
                 className="p-2.5 rounded-full bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white border border-white/10 transition-all"
@@ -121,7 +122,7 @@ export default function Hero({ onOpenResume }: HeroProps) {
                 <LinkedinIcon className="w-4 h-4" />
               </a>
               <a
-                href={`mailto:${PERSONAL_INFO.email}`}
+                href={`mailto:${profile.email ?? ''}`}
                 className="p-2.5 rounded-full bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white border border-white/10 transition-all"
                 title="Email"
               >
@@ -181,8 +182,8 @@ export default function Hero({ onOpenResume }: HeroProps) {
 
               {/* Name & Title */}
               <div className="text-center mb-6" style={{ transform: "translateZ(40px)" }}>
-                <h3 className="text-2xl font-bold text-white tracking-tight mb-1">{PERSONAL_INFO.name}</h3>
-                <p className="text-xs font-mono text-gray-400 tracking-wide uppercase mb-3">{PERSONAL_INFO.role}</p>
+                <h3 className="text-2xl font-bold text-white tracking-tight mb-1">{profile.name}</h3>
+                <p className="text-xs font-mono text-gray-400 tracking-wide uppercase mb-3">{profile.role}</p>
                 
                 <div className="flex flex-wrap justify-center gap-2">
                   <span className="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1">
