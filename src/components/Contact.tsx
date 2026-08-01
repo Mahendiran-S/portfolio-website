@@ -1,45 +1,221 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { PERSONAL_INFO } from "@/data/portfolioData";
-import { Mail, Phone, FileText, Send, CheckCircle2, Sparkles, MapPin } from "lucide-react";
+import { Mail, Phone, FileText, Send, CheckCircle2, Sparkles, AlertCircle, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
 import { LinkedinIcon, GithubIcon, InstagramIcon } from "@/components/SocialIcons";
 
 interface ContactProps {
   onOpenResume: () => void;
 }
 
+interface FormState {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  captchaAnswer: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  subject?: string;
+  message?: string;
+  captchaAnswer?: string;
+}
+
+// XSS Sanitizer Utility
+const sanitizeInput = (input: string): string => {
+  return input
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
+};
+
 export default function Contact({ onOpenResume }: ContactProps) {
-  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
+  const [formData, setFormData] = useState<FormState>({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+    captchaAnswer: "",
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Security CAPTCHA Challenge Generator
+  const [captchaNum1, setCaptchaNum1] = useState(5);
+  const [captchaNum2, setCaptchaNum2] = useState(3);
+
+  const generateCaptcha = () => {
+    const n1 = Math.floor(Math.random() * 8) + 2;
+    const n2 = Math.floor(Math.random() * 8) + 1;
+    setCaptchaNum1(n1);
+    setCaptchaNum2(n2);
+    setFormData((prev) => ({ ...prev, captchaAnswer: "" }));
+  };
+
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+
+  // Validate Field Live
+  const validateField = (field: keyof FormState, value: string): string | undefined => {
+    const trimmed = value.trim();
+
+    if (field === "name") {
+      if (!trimmed) return "Name is required.";
+      if (trimmed.length < 3) return "Name must be at least 3 characters.";
+      if (trimmed.length > 50) return "Name cannot exceed 50 characters.";
+      if (!/^[A-Za-z\s]+$/.test(trimmed)) return "Name can only contain letters and spaces.";
+    }
+
+    if (field === "email") {
+      if (!trimmed) return "Email address is required.";
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(trimmed)) return "Please enter a valid email address (e.g. name@domain.com).";
+    }
+
+    if (field === "subject") {
+      if (!trimmed) return "Subject is required.";
+      if (trimmed.length < 5) return "Subject must be at least 5 characters.";
+      if (trimmed.length > 100) return "Subject cannot exceed 100 characters.";
+    }
+
+    if (field === "message") {
+      if (!trimmed) return "Message is required.";
+      if (trimmed.length < 20) return "Message must be at least 20 characters long.";
+      if (trimmed.length > 1000) return "Message cannot exceed 1000 characters.";
+      if (/^\s*$/.test(value)) return "Message cannot consist of spaces only.";
+    }
+
+    if (field === "captchaAnswer") {
+      if (!trimmed) return "Security verification answer is required.";
+      if (parseInt(trimmed, 10) !== captchaNum1 + captchaNum2) {
+        return `Incorrect answer. What is ${captchaNum1} + ${captchaNum2}?`;
+      }
+    }
+
+    return undefined;
+  };
+
+  const handleInputChange = (field: keyof FormState, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    // Remove error immediately if valid
+    const fieldError = validateField(field, value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (!fieldError) {
+        delete next[field];
+      } else {
+        next[field] = fieldError;
+      }
+      return next;
+    });
+  };
+
+  const validateAll = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    const nameErr = validateField("name", formData.name);
+    if (nameErr) newErrors.name = nameErr;
+
+    const emailErr = validateField("email", formData.email);
+    if (emailErr) newErrors.email = emailErr;
+
+    const subjectErr = validateField("subject", formData.subject);
+    if (subjectErr) newErrors.subject = subjectErr;
+
+    const msgErr = validateField("message", formData.message);
+    if (msgErr) newErrors.message = msgErr;
+
+    const captchaErr = validateField("captchaAnswer", formData.captchaAnswer);
+    if (captchaErr) newErrors.captchaAnswer = captchaErr;
+
+    setErrors(newErrors);
+    setTouched({
+      name: true,
+      email: true,
+      subject: true,
+      message: true,
+      captchaAnswer: true,
+    });
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+
+    // 1. Rate Limiting Check (Anti-Spam Throttling)
+    const now = Date.now();
+    if (lastSubmissionTime && now - lastSubmissionTime < 30000) {
+      const secondsLeft = Math.ceil((30000 - (now - lastSubmissionTime)) / 1000);
+      setToastMessage({
+        type: "error",
+        text: `Please wait ${secondsLeft} seconds before sending another message to prevent spam.`,
+      });
+      return;
+    }
+
+    // 2. Strict Validation Check
+    if (!validateAll()) {
+      setToastMessage({
+        type: "error",
+        text: "Please fix the highlighted errors before submitting.",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
+    setToastMessage(null);
+
+    // Sanitize user inputs
+    const sanitizedData = {
+      name: sanitizeInput(formData.name.trim()),
+      email: sanitizeInput(formData.email.trim()),
+      subject: sanitizeInput(formData.subject.trim()),
+      message: sanitizeInput(formData.message.trim()),
+    };
 
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
+      setLastSubmissionTime(Date.now());
+      setToastMessage({
+        type: "success",
+        text: `Thank you ${sanitizedData.name}! Your message has been sent successfully.`,
+      });
 
-      // Trigger Confetti Celebration!
+      // Confetti Explosion
       try {
         confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.7 },
-          colors: ["#ffffff", "#9ca3af", "#6366f1"],
+          particleCount: 90,
+          spread: 80,
+          origin: { y: 0.65 },
+          colors: ["#ffffff", "#9ca3af", "#6366f1", "#10b981"],
         });
       } catch (e) {
         // Fallback
       }
 
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+      setFormData({ name: "", email: "", subject: "", message: "", captchaAnswer: "" });
+      setErrors({});
+      setTouched({});
+      generateCaptcha();
+    }, 1200);
   };
 
   const contactCards = [
@@ -100,6 +276,37 @@ export default function Contact({ onOpenResume }: ContactProps) {
           </p>
         </div>
 
+        {/* Global Toast Notification */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`max-w-xl mx-auto mb-8 p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs font-mono shadow-2xl ${
+                toastMessage.type === "success"
+                  ? "bg-emerald-950/80 border-emerald-500/40 text-emerald-200"
+                  : "bg-red-950/80 border-red-500/40 text-red-200"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {toastMessage.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                )}
+                <span>{toastMessage.text}</span>
+              </div>
+              <button
+                onClick={() => setToastMessage(null)}
+                className="text-gray-400 hover:text-white font-bold px-1"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* Left Side: Contact Cards Grid */}
@@ -140,7 +347,7 @@ export default function Contact({ onOpenResume }: ContactProps) {
             })}
           </div>
 
-          {/* Right Side: Interactive Contact Form */}
+          {/* Right Side: Validated Interactive Contact Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -154,7 +361,7 @@ export default function Contact({ onOpenResume }: ContactProps) {
                 </div>
                 <h3 className="text-2xl font-bold font-space text-white">Message Sent Successfully!</h3>
                 <p className="text-sm text-gray-400 max-w-md mx-auto">
-                  Thank you for reaching out, Mahendiran will get back to you within 24 hours.
+                  Thank you for reaching out, Mahendiran will review your message and reply within 24 hours.
                 </p>
                 <button
                   onClick={() => setIsSubmitted(false)}
@@ -164,65 +371,165 @@ export default function Contact({ onOpenResume }: ContactProps) {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <h3 className="text-xl font-bold font-space text-white mb-2">Send Me a Message</h3>
+              <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold font-space text-white">Send Me a Message</h3>
+                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">* Required Fields</span>
+                </div>
 
+                {/* Name & Email Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Name Input */}
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Your Name *</label>
+                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
+                      Your Name <span className="text-red-400">*</span>
+                    </label>
                     <input
                       type="text"
-                      required
+                      maxLength={50}
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="John Doe"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/40 focus:bg-white/[0.06] transition-all font-sans"
+                      className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] text-white placeholder-gray-600 text-sm focus:outline-none transition-all font-sans border ${
+                        touched.name && errors.name
+                          ? "border-red-500/80 bg-red-950/10 focus:border-red-500"
+                          : "border-white/10 focus:border-white/40 focus:bg-white/[0.06]"
+                      }`}
                     />
+                    {touched.name && errors.name && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs text-red-400 font-mono">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{errors.name}</span>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Email Input */}
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Email Address *</label>
+                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
+                      Email Address <span className="text-red-400">*</span>
+                    </label>
                     <input
                       type="email"
-                      required
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
                       placeholder="john@example.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/40 focus:bg-white/[0.06] transition-all font-sans"
+                      className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] text-white placeholder-gray-600 text-sm focus:outline-none transition-all font-sans border ${
+                        touched.email && errors.email
+                          ? "border-red-500/80 bg-red-950/10 focus:border-red-500"
+                          : "border-white/10 focus:border-white/40 focus:bg-white/[0.06]"
+                      }`}
                     />
+                    {touched.email && errors.email && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs text-red-400 font-mono">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{errors.email}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
+                {/* Subject Input */}
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Subject</label>
+                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
+                    Subject <span className="text-red-400">*</span>
+                  </label>
                   <input
                     type="text"
+                    maxLength={100}
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Project Inquiry / Internship Opportunity"
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/40 focus:bg-white/[0.06] transition-all font-sans"
+                    onChange={(e) => handleInputChange("subject", e.target.value)}
+                    placeholder="Project Inquiry / Internship Opportunity (min 5 chars)"
+                    className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] text-white placeholder-gray-600 text-sm focus:outline-none transition-all font-sans border ${
+                      touched.subject && errors.subject
+                        ? "border-red-500/80 bg-red-950/10 focus:border-red-500"
+                        : "border-white/10 focus:border-white/40 focus:bg-white/[0.06]"
+                    }`}
                   />
+                  {touched.subject && errors.subject && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-xs text-red-400 font-mono">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.subject}</span>
+                    </div>
+                  )}
                 </div>
 
+                {/* Message Input */}
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Message *</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest">
+                      Message <span className="text-red-400">*</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-gray-500">
+                      {formData.message.trim().length} / 1000 chars
+                    </span>
+                  </div>
                   <textarea
-                    required
                     rows={4}
+                    maxLength={1000}
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) => handleInputChange("message", e.target.value)}
                     placeholder="Hi Mahendiran, I would like to discuss..."
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-white/40 focus:bg-white/[0.06] transition-all font-sans resize-none"
+                    className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] text-white placeholder-gray-600 text-sm focus:outline-none transition-all font-sans resize-none border ${
+                      touched.message && errors.message
+                        ? "border-red-500/80 bg-red-950/10 focus:border-red-500"
+                        : "border-white/10 focus:border-white/40 focus:bg-white/[0.06]"
+                    }`}
                   />
+                  {touched.message && errors.message && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-xs text-red-400 font-mono">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.message}</span>
+                    </div>
+                  )}
                 </div>
 
+                {/* Security CAPTCHA Challenge */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      Anti-Spam Verification: What is <strong className="text-white">{captchaNum1} + {captchaNum2}</strong>? <span className="text-red-400">*</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={generateCaptcha}
+                      className="text-gray-400 hover:text-white p-1"
+                      title="New Math Question"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    value={formData.captchaAnswer}
+                    onChange={(e) => handleInputChange("captchaAnswer", e.target.value)}
+                    placeholder="Enter answer (e.g. 8)"
+                    className={`w-full px-4 py-2.5 rounded-xl bg-white/[0.03] text-white placeholder-gray-600 text-sm focus:outline-none transition-all font-mono border ${
+                      touched.captchaAnswer && errors.captchaAnswer
+                        ? "border-red-500/80 bg-red-950/10 focus:border-red-500"
+                        : "border-white/10 focus:border-white/40 focus:bg-white/[0.06]"
+                    }`}
+                  />
+                  {touched.captchaAnswer && errors.captchaAnswer && (
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-red-400 font-mono">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.captchaAnswer}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit Button with Loading Spinner */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.4)] disabled:opacity-50"
+                  className="w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <span className="font-mono text-xs animate-pulse">Dispatching Message...</span>
+                    <div className="flex items-center gap-2 font-mono text-xs text-black">
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      <span>Validating & Sending...</span>
+                    </div>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
