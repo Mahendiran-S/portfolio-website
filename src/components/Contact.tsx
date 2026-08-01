@@ -239,7 +239,7 @@ export default function Contact({ onOpenResume }: ContactProps) {
     },
     {
       label: "Instagram",
-      value: "@mahendiran_dev",
+      value: "@toxin_artist_0210",
       href: PERSONAL_INFO.instagram,
       icon: <InstagramIcon className="w-5 h-5 text-white" />,
     },

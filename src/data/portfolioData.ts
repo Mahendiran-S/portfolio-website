@@ -62,7 +62,7 @@ export const PERSONAL_INFO = {
   phone: "+91 86107 74327",
   github: "https://github.com/Mahendiran-S",
   linkedin: "https://www.linkedin.com/in/mahendiran-s-/",
-  instagram: "https://instagram.com/mahendiran_dev",
+  instagram: "https://www.instagram.com/toxin_artist_0210/",
   seeking: [
     "Software Engineer Internships",
     "Full-Stack Developer Roles",
