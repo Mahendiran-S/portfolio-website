@@ -34,7 +34,11 @@ export default function CertificateModal({ cert, onClose }: CertificateModalProp
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <div
+        data-lenis-prevent="true"
+        data-lenis-prevent-touch="true"
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+      >
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -49,11 +53,12 @@ export default function CertificateModal({ cert, onClose }: CertificateModalProp
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", duration: 0.5 }}
-          className="relative w-full max-w-4xl glass-card rounded-3xl border border-white/15 bg-[#0d0d0f]/95 overflow-hidden shadow-2xl z-10 my-auto flex flex-col max-h-[90vh]"
+          transition={{ type: "spring", duration: 0.4 }}
+          data-lenis-prevent="true"
+          className="relative w-full max-w-4xl glass-card rounded-3xl border border-white/15 bg-[#0d0d0f]/95 overflow-hidden shadow-2xl z-10 my-auto flex flex-col max-h-[92vh]"
         >
-          {/* Header Bar */}
-          <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          {/* Fixed Header Bar */}
+          <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02] shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-white/10 text-white">
                 <Award className="w-5 h-5" />
@@ -77,19 +82,22 @@ export default function CertificateModal({ cert, onClose }: CertificateModalProp
             </button>
           </div>
 
-          {/* Modal Content Container */}
-          <div className="p-6 overflow-y-auto space-y-6">
+          {/* Scrollable Content Container */}
+          <div
+            data-lenis-prevent="true"
+            className="p-6 overflow-y-auto space-y-6 flex-1 max-h-[calc(92vh-130px)] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+          >
             {/* High-Res Certificate Image View */}
             <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/50 flex items-center justify-center p-3 group shadow-inner">
               <img
                 src={imageUrl}
                 alt={cert.title}
-                className="w-full max-h-[520px] object-contain rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.01]"
+                className="w-full h-auto max-h-[750px] object-contain rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.01]"
               />
             </div>
 
             {/* Certificate Metadata Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
                 <Building2 className="w-5 h-5 text-gray-400 shrink-0" />
                 <div>
@@ -124,8 +132,8 @@ export default function CertificateModal({ cert, onClose }: CertificateModalProp
             )}
           </div>
 
-          {/* Modal Footer Controls */}
-          <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between bg-white/[0.02] gap-4">
+          {/* Fixed Footer Controls */}
+          <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between bg-white/[0.02] gap-4 shrink-0">
             <a
               href={imageUrl}
               target="_blank"
