@@ -22,7 +22,58 @@ function fileToDataURL(file: File | Blob): Promise<string> {
 }
 
 /**
- * Parses raw text extracted from a certificate image using smart NLP/Regex rules
+ * Decodes text streams directly from a PDF file in the browser (supports native PDFs from AWS, Coursera, Udemy, NPTEL, Cognifyz, etc.)
+ */
+async function extractTextFromPDFBuffer(file: File | Blob): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+
+  const decoder = new TextDecoder('latin1');
+  const pdfString = decoder.decode(bytes);
+
+  const textSegments: string[] = [];
+
+  // Match PDF text blocks between BT (Begin Text) and ET (End Text)
+  const btEtRegex = /BT[\s\S]*?ET/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = btEtRegex.exec(pdfString)) !== null) {
+    const block = match[0];
+    const strRegex = /\(([\s\S]*?)\)\s*T[jJ]/g;
+    let strMatch: RegExpExecArray | null;
+
+    while ((strMatch = strRegex.exec(block)) !== null) {
+      const decoded = strMatch[1]
+        .replace(/\\([0-7]{3})/g, (_, oct) => String.fromCharCode(parseInt(oct, 8)))
+        .replace(/\\(.)/g, '$1')
+        .trim();
+
+      if (decoded.length > 1) {
+        textSegments.push(decoded);
+      }
+    }
+  }
+
+  // Fallback pattern matcher for readable text streams
+  if (textSegments.length < 3) {
+    const rawMatches = pdfString.match(/[A-Za-z0-9\s,.-]{5,80}/g);
+    if (rawMatches) {
+      const cleanCandidates = rawMatches
+        .map((s) => s.trim())
+        .filter(
+          (s) =>
+            s.length > 5 &&
+            !/obj|endobj|stream|endstream|xref|trailer|Catalog|Pages|Parent|Font|Encoding|Type|Filter|FlateDecode/i.test(s)
+        );
+      textSegments.push(...cleanCandidates);
+    }
+  }
+
+  return textSegments.join('\n');
+}
+
+/**
+ * Parses raw text extracted from a certificate image or PDF using smart NLP/Regex rules
  */
 export function parseCertificateText(rawText: string): ExtractedCertificateData {
   const text = rawText.replace(/\r\n/g, '\n');
@@ -67,16 +118,15 @@ export function parseCertificateText(rawText: string): ExtractedCertificateData 
     ) {
       continue;
     }
-    if (/certified|developer|architect|practitioner|engineer|specialist|design|fundamentals|full stack/i.test(line)) {
+    if (/certified|developer|architect|practitioner|engineer|specialist|design|fundamentals|full stack|completion/i.test(line)) {
       title = line;
       break;
     }
   }
 
   if (!title) {
-    // Fallback: pick the line with highest capital letters / prominent heading
     const candidateLines = lines.filter(
-      (l) => l.length > 5 && l.length < 80 && !/certify|present|grant|award|verify/i.test(l)
+      (l) => l.length > 5 && l.length < 80 && !/certify|present|grant|award|verify|date|issued/i.test(l)
     );
     if (candidateLines.length > 0) {
       title = candidateLines[0];
@@ -120,22 +170,34 @@ export function parseCertificateText(rawText: string): ExtractedCertificateData 
 }
 
 /**
- * Runs OCR on an image File, Blob, or URL and extracts certificate fields
+ * Runs OCR or PDF Text Decoding on a File, Blob, or URL and extracts certificate fields
  */
 export async function extractCertificateFromImage(
   imageSource: File | Blob | string
 ): Promise<ExtractedCertificateData> {
+  // If it's a PDF file, use high-speed browser PDF stream decoding
+  if (typeof imageSource !== 'string') {
+    const fileType = (imageSource as File).type || '';
+    const fileName = (imageSource as File).name || '';
+
+    if (fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf')) {
+      try {
+        const pdfText = await extractTextFromPDFBuffer(imageSource);
+        if (pdfText && pdfText.trim().length > 10) {
+          return parseCertificateText(pdfText);
+        }
+      } catch (pdfErr) {
+        console.warn('PDF stream decoding failed, falling back to OCR:', pdfErr);
+      }
+    }
+  }
+
+  // Image processing via Tesseract OCR
   let sourceToRecognize: string = '';
 
   if (typeof imageSource === 'string') {
     sourceToRecognize = imageSource;
   } else {
-    // Check if it's a PDF file
-    const fileType = (imageSource as File).type || '';
-    const fileName = (imageSource as File).name || '';
-    if (fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf')) {
-      throw new Error('PDF files cannot be processed directly by OCR. Please upload an image of your certificate (PNG, JPG, WEBP).');
-    }
     sourceToRecognize = await fileToDataURL(imageSource);
   }
 

@@ -121,7 +121,7 @@ export function CertificateAutoFiller(props: any) {
           <label style={{ cursor: isAnalyzing ? 'not-allowed' : 'pointer', display: 'block' }}>
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/jpg"
+              accept="image/*,.pdf"
               onChange={handleFileUpload}
               style={{ display: 'none' }}
               disabled={isAnalyzing}
