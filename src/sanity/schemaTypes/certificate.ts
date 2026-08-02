@@ -1,9 +1,13 @@
 import { defineField, defineType } from 'sanity';
+import { CertificateAutoFiller } from '../components/CertificateAutoFiller';
 
 export const certificate = defineType({
   name: 'certificate',
   title: 'Certificate',
   type: 'document',
+  components: {
+    input: CertificateAutoFiller,
+  },
   fields: [
     defineField({ name: 'title', title: 'Certificate Name', type: 'string', validation: (R) => R.required() }),
     defineField({
