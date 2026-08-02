@@ -1,75 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { set, PatchEvent } from 'sanity';
 import { Card, Text, Stack, Box, Spinner, Badge, Flex } from '@sanity/ui';
 import { extractCertificateFromImage } from '@/lib/certificateExtractor';
 
 export function CertificateAutoFiller(props: any) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [progressStatus, setProgressStatus] = useState('');
   const [lastExtracted, setLastExtracted] = useState<string | null>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const processFile = useCallback(
+    async (file: File) => {
+      if (!file) return;
+
+      setIsAnalyzing(true);
+      setProgressStatus('Scanning certificate image with AI OCR...');
+
+      try {
+        const extracted = await extractCertificateFromImage(file);
+
+        // Create patch operations for Sanity form fields
+        const patches: any[] = [];
+
+        if (extracted.title) {
+          patches.push(set(extracted.title, ['title']));
+        }
+        if (extracted.issuer) {
+          patches.push(set(extracted.issuer, ['issuer']));
+        }
+        if (extracted.issueDate) {
+          patches.push(set(extracted.issueDate, ['issueDate']));
+        }
+        if (extracted.credentialId) {
+          patches.push(set(extracted.credentialId, ['credentialId']));
+        }
+        if (extracted.category) {
+          patches.push(set(extracted.category, ['category']));
+        }
+
+        // Apply patches to the form
+        if (patches.length > 0) {
+          props.onChange(PatchEvent.from(patches));
+        }
+
+        setLastExtracted(
+          `Extracted: "${extracted.title ?? 'Certificate'}" issued by "${extracted.issuer ?? 'Unknown'}" (${extracted.category})`
+        );
+      } catch (err) {
+        console.error('Auto-fill error:', err);
+        setLastExtracted('Could not auto-read image. You can manually enter details below.');
+      } finally {
+        setIsAnalyzing(false);
+        setProgressStatus('');
+      }
+    },
+    [props]
+  );
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (file) processFile(file);
+  };
 
-    setIsAnalyzing(true);
-    setProgressStatus('Scanning certificate image with AI OCR...');
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
 
-    try {
-      const extracted = await extractCertificateFromImage(file);
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
 
-      // Create patch operations for Sanity form fields
-      const patches: any[] = [];
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
 
-      if (extracted.title) {
-        patches.push(set(extracted.title, ['title']));
-      }
-      if (extracted.issuer) {
-        patches.push(set(extracted.issuer, ['issuer']));
-      }
-      if (extracted.issueDate) {
-        patches.push(set(extracted.issueDate, ['issueDate']));
-      }
-      if (extracted.credentialId) {
-        patches.push(set(extracted.credentialId, ['credentialId']));
-      }
-      if (extracted.category) {
-        patches.push(set(extracted.category, ['category']));
-      }
-
-      // Apply patches to the form
-      if (patches.length > 0) {
-        props.onChange(PatchEvent.from(patches));
-      }
-
-      setLastExtracted(
-        `Extracted: "${extracted.title ?? 'Certificate'}" issued by "${extracted.issuer ?? 'Unknown'}" (${extracted.category})`
-      );
-    } catch (err) {
-      console.error('Auto-fill error:', err);
-      setLastExtracted('Could not auto-read image. You can manually enter details below.');
-    } finally {
-      setIsAnalyzing(false);
-      setProgressStatus('');
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
     }
   };
 
   return (
-    <Card padding={4} radius={3} shadow={1} tone="primary" style={{ marginBottom: '16px', backgroundColor: '#13151a', border: '1px solid #282d39' }}>
+    <Card
+      padding={4}
+      radius={3}
+      shadow={1}
+      tone="primary"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      style={{
+        marginBottom: '20px',
+        backgroundColor: isDragging ? '#1a2e22' : '#13151a',
+        border: isDragging ? '2px dashed #22c55e' : '1px solid #282d39',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+      }}
+    >
       <Stack space={3}>
         <Flex justify="space-between" align="center">
           <Text size={2} weight="bold" style={{ color: '#fff' }}>
-            ✨ AI Certificate Auto-Filler
+            ✨ AI Certificate Auto-Filler (Drag & Drop Supported)
           </Text>
-          <Badge tone="positive">Editable</Badge>
+          <Badge tone={isDragging ? 'positive' : 'default'}>
+            {isDragging ? 'Drop File Here!' : 'Editable'}
+          </Badge>
         </Flex>
 
         <Text size={1} style={{ color: '#9aa0a6' }}>
-          Upload your certificate image to automatically read and pre-fill the Certificate Name, Issued By, Issue Date, Credential ID, and Category. All fields remain 100% editable!
+          Drag & drop your certificate image anywhere in this box or click to select. It automatically scans and fills Certificate Name, Issued By, Issue Date, Credential ID, and Category!
         </Text>
 
+        {/* Drag & Drop Visual Box */}
         <Box marginTop={2}>
-          <label style={{ cursor: isAnalyzing ? 'not-allowed' : 'pointer', display: 'inline-block' }}>
+          <label style={{ cursor: isAnalyzing ? 'not-allowed' : 'pointer', display: 'block' }}>
             <input
               type="file"
               accept="image/*,.pdf"
@@ -77,30 +126,41 @@ export function CertificateAutoFiller(props: any) {
               style={{ display: 'none' }}
               disabled={isAnalyzing}
             />
-            <span
+            <div
               style={{
-                display: 'inline-flex',
+                display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                borderRadius: '8px',
-                backgroundColor: '#22c55e',
-                color: '#000',
-                fontWeight: 600,
-                fontSize: '13px',
-                transition: 'opacity 0.2s',
-                opacity: isAnalyzing ? 0.6 : 1,
+                justifyContent: 'center',
+                padding: '24px',
+                borderRadius: '12px',
+                backgroundColor: isDragging ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: isDragging ? '2px dashed #22c55e' : '1px dashed rgba(255, 255, 255, 0.2)',
+                textAlign: 'center',
+                transition: 'all 0.2s ease',
               }}
             >
               {isAnalyzing ? (
-                <>
-                  <Spinner size={1} />
-                  <span>{progressStatus}</span>
-                </>
+                <Flex align="center" gap={3}>
+                  <Spinner size={2} />
+                  <Text size={2} style={{ color: '#22c55e', fontWeight: 600 }}>
+                    {progressStatus}
+                  </Text>
+                </Flex>
               ) : (
-                <span>📷 Upload Certificate & Auto-Fill Fields</span>
+                <>
+                  <Text size={4} style={{ marginBottom: '8px' }}>
+                    {isDragging ? '📥' : '📄'}
+                  </Text>
+                  <Text size={2} weight="bold" style={{ color: '#fff', marginBottom: '4px' }}>
+                    {isDragging ? 'Drop Certificate Image Now' : 'Drag & Drop Certificate Image Here'}
+                  </Text>
+                  <Text size={1} style={{ color: '#6b7280' }}>
+                    or click to browse from your computer (PNG, JPG, WEBP, PDF)
+                  </Text>
+                </>
               )}
-            </span>
+            </div>
           </label>
         </Box>
 
