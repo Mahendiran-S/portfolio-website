@@ -16,11 +16,16 @@ export default function Projects({ projects }: ProjectsProps) {
   const [filter, setFilter] = useState<string>("All");
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
-  const categories = ["All", "Featured", "Full Stack Application", "Web Application", "Design & Full Stack"];
+  const categories = ["All", "Featured", "Full Stack", "Web App", "Design"];
 
   const filteredProjects = filter === "All"
     ? projects
-    : projects.filter((p) => p.status === filter || p.category === filter);
+    : projects.filter((p) => {
+        if (filter === "Featured") return p.featured || p.status === "Featured";
+        const cat = (p.category ?? "").toLowerCase();
+        const f = filter.toLowerCase();
+        return cat.includes(f) || p.status?.toLowerCase().includes(f);
+      });
 
   const handleImageError = (id: string) => {
     setFailedImages((prev) => ({ ...prev, [id]: true }));

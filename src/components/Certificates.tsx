@@ -60,10 +60,13 @@ export default function Certificates({ certificates }: CertificatesProps) {
             </div>
           ) : (
             filteredCerts.map((cert, idx) => {
-              const hasUrl = cert.downloadUrl && cert.downloadUrl !== "#";
+              const certId = cert._id || cert.id || String(idx);
+              const issueDate = cert.date || cert.issueDate || "2024";
+              const targetUrl = cert.verificationUrl || cert.downloadUrl;
+              const hasUrl = targetUrl && targetUrl !== "#";
               return (
                 <motion.div
-                  key={cert.id}
+                  key={certId}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -98,7 +101,7 @@ export default function Certificates({ certificates }: CertificatesProps) {
                         Issued by: <span className="text-white font-medium">{cert.issuer}</span>
                       </p>
                       <p className="text-[10px] text-gray-500 font-mono">
-                        Issue Date: <span className="text-gray-400">{cert.date}</span>
+                        Issue Date: <span className="text-gray-400">{issueDate}</span>
                       </p>
                     </div>
                   </div>
@@ -106,7 +109,7 @@ export default function Certificates({ certificates }: CertificatesProps) {
                   <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
                     {hasUrl ? (
                       <a
-                        href={cert.downloadUrl}
+                        href={targetUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm"
