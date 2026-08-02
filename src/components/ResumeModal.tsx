@@ -45,7 +45,12 @@ export default function ResumeModal({ isOpen, onClose, resumeUrl = '/Mahendiran_
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+      <div
+        data-lenis-prevent="true"
+        data-lenis-prevent-touch="true"
+        data-lenis-prevent-wheel="true"
+        className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 overflow-hidden"
+      >
         {/* Backdrop Overlay */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -62,8 +67,8 @@ export default function ResumeModal({ isOpen, onClose, resumeUrl = '/Mahendiran_
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           data-lenis-prevent="true"
-          data-lenis-prevent-wheel="true"
           data-lenis-prevent-touch="true"
+          data-lenis-prevent-wheel="true"
           className="relative w-full max-w-4xl h-[88vh] flex flex-col glass-card rounded-3xl border border-white/20 overflow-hidden shadow-2xl bg-[#0c0c0e]/95 z-10 my-auto"
         >
           {/* Sticky Header Bar */}

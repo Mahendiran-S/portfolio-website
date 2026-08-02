@@ -85,6 +85,21 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Mahendiran S",
+  "url": "https://mahendiran.dev",
+  "image": "https://mahendiran.dev/mahendiran-profile.png",
+  "sameAs": [
+    "https://github.com/Mahendiran-S",
+    "https://linkedin.com/in/mahendiran-s"
+  ],
+  "jobTitle": "Software Developer",
+  "alumniOf": "Mahendra Engineering College",
+  "knowsAbout": ["React", "Next.js", "TypeScript", "Node.js", "Express", "Java", "Firebase", "Sanity CMS", "Tailwind CSS"]
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -93,13 +108,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} dark h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${inter.variable} dark h-full antialiased scroll-pt-24`}
     >
-      <body className="min-h-screen bg-[#080808] text-white selection:bg-white selection:text-black font-sans relative focus-visible:outline-none">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
+      <body className="min-h-screen bg-[#080808] text-white selection:bg-white selection:text-black font-sans relative focus-visible:outline-none overflow-x-hidden">
         <SmoothScrollProvider>
           <BackgroundFX />
           <CustomCursor />
-          <div className="relative z-10 overflow-x-hidden">
+          <div className="relative z-10 w-full">
             {children}
           </div>
         </SmoothScrollProvider>
