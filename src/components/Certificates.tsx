@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Award, ExternalLink, Sparkles, ShieldCheck, Eye } from "lucide-react";
 import type { SanityCertificate } from "@/sanity/types";
+import CertificateModal from "./CertificateModal";
 
 interface CertificatesProps {
   certificates: SanityCertificate[];
@@ -11,6 +12,7 @@ interface CertificatesProps {
 
 export default function Certificates({ certificates }: CertificatesProps) {
   const [selectedTab, setSelectedTab] = useState<string>("All");
+  const [selectedCert, setSelectedCert] = useState<SanityCertificate | null>(null);
 
   const tabs = ["All", "AWS", "NPTEL", "Internship", "Hackathons", "Workshops"];
 
@@ -64,6 +66,7 @@ export default function Certificates({ certificates }: CertificatesProps) {
               const issueDate = cert.date || cert.issueDate || "2024";
               const targetUrl = cert.verificationUrl || cert.downloadUrl;
               const hasUrl = targetUrl && targetUrl !== "#";
+
               return (
                 <motion.div
                   key={certId}
@@ -71,7 +74,8 @@ export default function Certificates({ certificates }: CertificatesProps) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.35, delay: idx * 0.05 }}
-                  className="glass-card rounded-2xl p-5 border border-white/10 relative group hover:border-white/30 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-[240px] shadow-lg hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)] bg-[#0c0c0e]/80"
+                  onClick={() => setSelectedCert(cert)}
+                  className="glass-card rounded-2xl p-5 border border-white/10 relative group hover:border-white/30 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-[240px] shadow-lg hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)] bg-[#0c0c0e]/80 cursor-pointer"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -107,30 +111,43 @@ export default function Certificates({ certificates }: CertificatesProps) {
                   </div>
 
                   <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCert(cert);
+                      }}
+                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>View</span>
+                    </button>
+
                     {hasUrl ? (
                       <a
                         href={targetUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm"
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1"
                       >
-                        <Eye className="w-3 h-3" />
-                        <span>View</span>
+                        <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                        <span>Verify</span>
+                        <ExternalLink className="w-2.5 h-2.5 text-gray-400" />
                       </a>
                     ) : (
                       <button
-                        className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCert(cert);
+                        }}
+                        className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <Eye className="w-3 h-3" />
-                        <span>View</span>
+                        <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                        <span>Verify</span>
                       </button>
                     )}
-                    <button
-                      className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span>Verify</span>
-                    </button>
                   </div>
                 </motion.div>
               );
@@ -138,6 +155,12 @@ export default function Certificates({ certificates }: CertificatesProps) {
           )}
         </div>
       </div>
+
+      {/* High-Res Certificate Image Viewer Modal */}
+      <CertificateModal
+        cert={selectedCert}
+        onClose={() => setSelectedCert(null)}
+      />
     </section>
   );
 }

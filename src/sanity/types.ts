@@ -90,6 +90,7 @@ export interface SanityCertificate {
   featured?: boolean;
   // Resolved
   certificateImageUrl?: string;
+  badgeUrl?: string;  // alias for certificateImageUrl
 }
 
 export interface SanitySkill {
