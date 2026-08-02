@@ -22,6 +22,18 @@ function fileToDataURL(file: File | Blob): Promise<string> {
 }
 
 /**
+ * Sanitizes raw string by stripping out garbled binary characters, non-printable control symbols, and excess whitespace
+ */
+function sanitizeText(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/[^\x20-\x7E\n\t]/g, ' ') // Keep only printable ASCII & newlines
+    .replace(/[^\w\s.,()/:-]/g, ' ')   // Remove unprintable symbols
+    .replace(/ +/g, ' ')
+    .trim();
+}
+
+/**
  * Decodes text streams directly from a PDF file in the browser (supports native PDFs from AWS, Coursera, Udemy, NPTEL, Cognifyz, etc.)
  */
 async function extractTextFromPDFBuffer(file: File | Blob): Promise<string> {
@@ -43,41 +55,46 @@ async function extractTextFromPDFBuffer(file: File | Blob): Promise<string> {
     let strMatch: RegExpExecArray | null;
 
     while ((strMatch = strRegex.exec(block)) !== null) {
-      const decoded = strMatch[1]
+      const raw = strMatch[1]
         .replace(/\\([0-7]{3})/g, (_, oct) => String.fromCharCode(parseInt(oct, 8)))
-        .replace(/\\(.)/g, '$1')
-        .trim();
+        .replace(/\\(.)/g, '$1');
+      
+      const clean = sanitizeText(raw);
 
-      if (decoded.length > 1) {
-        textSegments.push(decoded);
+      // Only accept clean printable segments with valid letters/words
+      if (clean.length >= 3 && /[a-zA-Z0-9]/.test(clean)) {
+        textSegments.push(clean);
       }
     }
   }
 
   // Fallback pattern matcher for readable text streams
-  if (textSegments.length < 3) {
+  if (textSegments.length < 2) {
     const rawMatches = pdfString.match(/[A-Za-z0-9\s,.-]{5,80}/g);
     if (rawMatches) {
       const cleanCandidates = rawMatches
-        .map((s) => s.trim())
+        .map((s) => sanitizeText(s))
         .filter(
           (s) =>
             s.length > 5 &&
+            /[a-zA-Z]{3,}/.test(s) &&
             !/obj|endobj|stream|endstream|xref|trailer|Catalog|Pages|Parent|Font|Encoding|Type|Filter|FlateDecode/i.test(s)
         );
       textSegments.push(...cleanCandidates);
     }
   }
 
-  return textSegments.join('\n');
+  const result = textSegments.join('\n');
+  return sanitizeText(result);
 }
 
 /**
  * Parses raw text extracted from a certificate image or PDF using smart NLP/Regex rules
  */
 export function parseCertificateText(rawText: string): ExtractedCertificateData {
-  const text = rawText.replace(/\r\n/g, '\n');
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const sanitized = sanitizeText(rawText);
+  const text = sanitized.replace(/\r\n/g, '\n');
+  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l.length > 2 && /[a-zA-Z0-9]/.test(l));
 
   let title = '';
   let issuer = '';
@@ -160,10 +177,10 @@ export function parseCertificateText(rawText: string): ExtractedCertificateData 
   }
 
   return {
-    title: title || undefined,
-    issuer: issuer || undefined,
-    issueDate: issueDate || undefined,
-    credentialId: credentialId || undefined,
+    title: sanitizeText(title) || undefined,
+    issuer: sanitizeText(issuer) || undefined,
+    issueDate: sanitizeText(issueDate) || undefined,
+    credentialId: sanitizeText(credentialId) || undefined,
     category,
     rawText: text,
   };
@@ -175,7 +192,6 @@ export function parseCertificateText(rawText: string): ExtractedCertificateData 
 export async function extractCertificateFromImage(
   imageSource: File | Blob | string
 ): Promise<ExtractedCertificateData> {
-  // If it's a PDF file, use high-speed browser PDF stream decoding
   if (typeof imageSource !== 'string') {
     const fileType = (imageSource as File).type || '';
     const fileName = (imageSource as File).name || '';
@@ -184,7 +200,11 @@ export async function extractCertificateFromImage(
       try {
         const pdfText = await extractTextFromPDFBuffer(imageSource);
         if (pdfText && pdfText.trim().length > 10) {
-          return parseCertificateText(pdfText);
+          const parsed = parseCertificateText(pdfText);
+          // If title is valid clean text, return it
+          if (parsed.title && /[a-zA-Z]/.test(parsed.title)) {
+            return parsed;
+          }
         }
       } catch (pdfErr) {
         console.warn('PDF stream decoding failed, falling back to OCR:', pdfErr);
