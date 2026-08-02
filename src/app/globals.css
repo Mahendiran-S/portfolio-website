@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 :root {
   --bg-dark: #080808;
@@ -10,7 +11,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   background-color: #080808;
   color: #ffffff;
   color-scheme: dark;

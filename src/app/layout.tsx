@@ -95,11 +95,11 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full bg-[#080808] text-white selection:bg-white selection:text-black font-sans relative overflow-x-hidden focus-visible:outline-none">
+      <body className="min-h-screen bg-[#080808] text-white selection:bg-white selection:text-black font-sans relative focus-visible:outline-none">
         <SmoothScrollProvider>
           <BackgroundFX />
           <CustomCursor />
-          <div className="relative z-10">
+          <div className="relative z-10 overflow-x-hidden">
             {children}
           </div>
         </SmoothScrollProvider>
