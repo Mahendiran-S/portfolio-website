@@ -13,7 +13,7 @@ interface SkillsProps {
   skills: SanitySkill[];
 }
 
-function getIcon(iconName: string) {
+function getIcon(iconName?: string) {
   const props = { className: "w-5 h-5 text-white" };
   switch (iconName) {
     case "FileCode": return <FileCode {...props} />;
@@ -106,7 +106,7 @@ export default function Skills({ skills }: SkillsProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="font-mono text-sm font-bold text-white">{skill.level}%</span>
+                  <span className="font-mono text-sm font-bold text-white">{(skill.percentage ?? skill.level ?? 80)}%</span>
                 </div>
               </div>
 

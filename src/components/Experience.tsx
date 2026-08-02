@@ -100,7 +100,7 @@ export default function Experience({ experiences }: ExperienceProps) {
               Impact & Key Responsibilities:
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {exp.responsibilities.map((resp, i) => (
+              {(exp.responsibilities ?? []).map((resp, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-gray-300 leading-relaxed">
                   <span className="font-mono text-white/50 text-[10px] mt-0.5">•</span>
                   <span>{resp}</span>
@@ -114,7 +114,7 @@ export default function Experience({ experiences }: ExperienceProps) {
             <span className="text-xs font-mono text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-1">
               <Code className="w-3.5 h-3.5" /> Stack:
             </span>
-            {exp.technologies.map((tech) => (
+            {(exp.technologies ?? []).map((tech) => (
               <span
                 key={tech}
                 className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/10 text-white border border-white/15"

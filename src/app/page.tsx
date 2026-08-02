@@ -1,5 +1,10 @@
-// Server Component – fetches all CMS data at request time (ISR)
-import { Suspense } from 'react';
+/**
+ * Home Page — Server Component with On-Demand ISR
+ *
+ * - Fetches all content from Sanity CMS at request time
+ * - Cache tags enable instant revalidation via /api/revalidate webhook
+ * - No hardcoded content — everything comes from Sanity
+ */
 import {
   fetchProfile,
   fetchCertificates,
@@ -10,8 +15,9 @@ import {
 } from '@/lib/cmsData';
 import HomeClient from './HomeClient';
 
-// ISR: revalidate every 60 seconds so new Sanity publishes appear quickly
-export const revalidate = 60;
+// Use tag-based revalidation (webhook triggers revalidateTag)
+// Fallback: revalidate every 5 minutes if webhook is not configured
+export const revalidate = 300;
 
 export default async function Home() {
   const [profile, certificates, projects, skills, experiences, resume] =
@@ -24,6 +30,9 @@ export default async function Home() {
       fetchResume(),
     ]);
 
+  // Determine resume URL: CMS first, then local fallback
+  const resumeUrl = resume?.resumeUrl ?? '/Mahendiran_S_Resume.pdf';
+
   return (
     <HomeClient
       profile={profile}
@@ -31,7 +40,7 @@ export default async function Home() {
       projects={projects}
       skills={skills}
       experiences={experiences}
-      resume={resume}
+      resumeUrl={resumeUrl}
     />
   );
 }

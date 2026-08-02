@@ -63,13 +63,14 @@ export default function Projects({ projects }: ProjectsProps) {
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProjects.map((project, idx) => {
+            const projectId = project._id || project.id || String(idx);
             const hasLiveDemo = project.liveUrl && project.liveUrl !== "#";
             const hasGithub = project.githubUrl && project.githubUrl !== "#";
-            const isImageFailed = failedImages[project.id];
+            const isImageFailed = failedImages[projectId];
 
             return (
               <motion.div
-                key={project.id}
+                key={projectId}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -86,10 +87,10 @@ export default function Projects({ projects }: ProjectsProps) {
                     </div>
                   ) : (
                     <img
-                      src={project.imageUrl ?? ''}
+                      src={project.thumbnailUrl ?? project.imageUrl ?? ''}
                       alt={`Screenshot preview of ${project.title}`}
                       loading="lazy"
-                      onError={() => handleImageError(project.id)}
+                      onError={() => handleImageError(projectId)}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 group-hover:brightness-100"
                     />
                   )}
@@ -120,7 +121,7 @@ export default function Projects({ projects }: ProjectsProps) {
                   <div>
                     {/* Tech Badges */}
                     <div className="flex flex-wrap gap-1.5 mb-6">
-                      {project.technologies.slice(0, 4).map((tech) => (
+                      {(project.techStack ?? project.technologies ?? []).slice(0, 4).map((tech) => (
                         <span
                           key={tech}
                           className="px-2.5 py-1 rounded-md text-[10px] font-mono bg-white/5 text-gray-300 border border-white/10"
@@ -128,9 +129,9 @@ export default function Projects({ projects }: ProjectsProps) {
                           {tech}
                         </span>
                       ))}
-                      {project.technologies.length > 4 && (
+                      {(project.techStack ?? project.technologies ?? []).length > 4 && (
                         <span className="px-2 py-1 rounded-md text-[10px] font-mono bg-white/5 text-gray-400">
-                          +{project.technologies.length - 4}
+                          +{(project.techStack ?? project.technologies ?? []).length - 4}
                         </span>
                       )}
                     </div>

@@ -18,7 +18,6 @@ import type {
   SanityProject,
   SanitySkill,
   SanityExperience,
-  SanityResume,
 } from '@/sanity/types';
 
 interface HomeClientProps {
@@ -27,7 +26,7 @@ interface HomeClientProps {
   projects: SanityProject[];
   skills: SanitySkill[];
   experiences: SanityExperience[];
-  resume: SanityResume | null;
+  resumeUrl: string;
 }
 
 export default function HomeClient({
@@ -36,24 +35,42 @@ export default function HomeClient({
   projects,
   skills,
   experiences,
-  resume,
+  resumeUrl,
 }: HomeClientProps) {
   const [isResumeOpen, setIsResumeOpen] = useState(false);
-
-  const resumeUrl = resume?.resumeUrl ?? '/Mahendiran_S_Resume.pdf';
 
   return (
     <main className="min-h-screen bg-[#080808] text-white selection:bg-white selection:text-black">
       <Navbar onOpenResume={() => setIsResumeOpen(true)} />
+
+      {/* 01 — Hero: Profile headline + social links */}
       <Hero profile={profile} onOpenResume={() => setIsResumeOpen(true)} />
+
+      {/* 02 — About: Bio, stats, timeline */}
       <About profile={profile} />
+
+      {/* 03 — Skills: Tech stack from CMS */}
       <Skills skills={skills} />
+
+      {/* 04 — Experience: Work history from CMS */}
       <Experience experiences={experiences} />
+
+      {/* 05 — Projects: Project showcase from CMS */}
       <Projects projects={projects} />
+
+      {/* 06 — Certificates: From CMS with category filters */}
       <Certificates certificates={certificates} />
+
+      {/* 07 — GitHub: Live API stats */}
       <GithubSection />
+
+      {/* 08 — Contact: Uses profile CMS data for links */}
       <Contact profile={profile} onOpenResume={() => setIsResumeOpen(true)} />
+
+      {/* Footer */}
       <Footer profile={profile} />
+
+      {/* Resume Modal: PDF from CMS */}
       <ResumeModal
         isOpen={isResumeOpen}
         onClose={() => setIsResumeOpen(false)}

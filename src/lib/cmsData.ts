@@ -1,24 +1,29 @@
 /**
- * Sanity fallback layer.
+ * CMS Data Layer — Production Version
  *
- * All functions try Sanity first. If Sanity is not yet configured
- * (missing project ID) they return the hardcoded data so the portfolio
- * always renders correctly during local development.
+ * All data is fetched from Sanity CMS.
+ * Cache tags enable on-demand revalidation via Sanity webhooks.
+ * Falls back gracefully to empty/default values if Sanity is not configured.
+ *
+ * Workflow:
+ *   Publish in Sanity Studio
+ *   → Sanity sends webhook to /api/revalidate
+ *   → Next.js revalidates the cache tag for that content type
+ *   → Portfolio updates within seconds — NO redeployment needed
  */
-import {
-  PERSONAL_INFO,
-  SKILLS,
-  EXPERIENCES,
-  PROJECTS,
-  CERTIFICATES,
-} from '@/data/portfolioData';
 import {
   getProfile,
   getCertificates,
   getProjects,
   getSkills,
   getExperiences,
+  getEducation,
+  getAchievements,
+  getHackathons,
   getResume,
+  getTestimonials,
+  getServices,
+  getSocialLinks,
 } from '@/sanity/queries';
 import type {
   SanityProfile,
@@ -26,131 +31,102 @@ import type {
   SanityProject,
   SanitySkill,
   SanityExperience,
+  SanityEducation,
+  SanityAchievement,
+  SanityHackathon,
   SanityResume,
+  SanityTestimonial,
+  SanityService,
+  SanitySocialLink,
 } from '@/sanity/types';
 
-const SANITY_READY = !!(
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID &&
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID !== 'mahendiran-portfolio'
-);
-
-// ─── Profile ────────────────────────────────────────────────────────────────
-export async function fetchProfile(): Promise<SanityProfile> {
-  if (SANITY_READY) {
-    try {
-      const data = await getProfile();
-      if (data) return data;
-    } catch {}
+// Helper that wraps a fetch and returns a fallback on error
+async function safeFetch<T>(fn: () => Promise<T>, fallback: T, tag: string): Promise<T> {
+  const pid = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+  if (!pid || pid === 'placeholder' || pid === 'your_project_id_here') {
+    return fallback;
   }
-  // Fallback to hardcoded
-  return {
-    name: PERSONAL_INFO.name,
-    role: PERSONAL_INFO.role,
-    tagline: PERSONAL_INFO.tagline,
-    aboutBio: PERSONAL_INFO.aboutBio,
-    college: PERSONAL_INFO.college,
-    location: PERSONAL_INFO.location,
-    email: PERSONAL_INFO.email,
-    phone: PERSONAL_INFO.phone,
-    githubUrl: PERSONAL_INFO.github,
-    linkedinUrl: PERSONAL_INFO.linkedin,
-    instagramUrl: PERSONAL_INFO.instagram,
+  try {
+    const result = await fn();
+    return result ?? fallback;
+  } catch (err) {
+    console.warn(`[CMS] Failed to fetch ${tag}:`, err);
+    return fallback;
+  }
+}
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+export async function fetchProfile(): Promise<SanityProfile> {
+  const result = await safeFetch(getProfile, null, 'profile');
+  return result ?? {
+    name: 'MAHENDIRAN S',
+    role: 'Software Developer',
+    tagline: 'Building scalable, modern, and user-friendly web applications with clean code and elegant design.',
+    email: 'mahendirans002@gmail.com',
+    phone: '+91 86107 74327',
+    location: 'Tamil Nadu, India',
+    aboutBio: 'Dynamic Software Developer specializing in full-stack development, low-code solutions, and web design.',
     availability: 'Open for Roles & Internships',
+    githubUrl: 'https://github.com/Mahendiran-S',
+    linkedinUrl: 'https://www.linkedin.com/in/mahendiran-s-/',
+    instagramUrl: 'https://www.instagram.com/toxin_artist_0210/',
     profilePhotoUrl: '/mahendiran-profile.png',
     resumeUrl: '/Mahendiran_S_Resume.pdf',
+    githubUsername: 'Mahendiran-S',
   };
 }
 
-// ─── Certificates ────────────────────────────────────────────────────────────
+// ─── Certificates ─────────────────────────────────────────────────────────────
 export async function fetchCertificates(): Promise<SanityCertificate[]> {
-  if (SANITY_READY) {
-    try {
-      const data = await getCertificates();
-      if (data?.length) return data;
-    } catch {}
-  }
-  return CERTIFICATES.map((c) => ({
-    id: c.id,
-    title: c.title,
-    issuer: c.issuer,
-    category: c.category,
-    date: c.date,
-    credentialId: c.credentialId,
-    downloadUrl: c.downloadUrl,
-  }));
+  return safeFetch(getCertificates, [], 'certificates');
 }
 
-// ─── Projects ────────────────────────────────────────────────────────────────
+// ─── Projects ─────────────────────────────────────────────────────────────────
 export async function fetchProjects(): Promise<SanityProject[]> {
-  if (SANITY_READY) {
-    try {
-      const data = await getProjects();
-      if (data?.length) return data;
-    } catch {}
-  }
-  return PROJECTS.map((p) => ({
-    id: p.id,
-    title: p.title,
-    category: p.category,
-    description: p.description,
-    longDescription: p.longDescription,
-    technologies: p.technologies,
-    features: p.features,
-    architectureDetails: p.architectureDetails,
-    githubUrl: p.githubUrl,
-    liveUrl: p.liveUrl,
-    status: p.status,
-    featured: true,
-    imageUrl: p.image,
-  }));
+  return safeFetch(getProjects, [], 'projects');
 }
 
-// ─── Skills ──────────────────────────────────────────────────────────────────
+// ─── Skills ───────────────────────────────────────────────────────────────────
 export async function fetchSkills(): Promise<SanitySkill[]> {
-  if (SANITY_READY) {
-    try {
-      const data = await getSkills();
-      if (data?.length) return data;
-    } catch {}
-  }
-  return SKILLS.map((s) => ({
-    name: s.name,
-    category: s.category,
-    level: s.level,
-    iconName: s.iconName,
-    description: s.description,
-  }));
+  return safeFetch(getSkills, [], 'skills');
 }
 
 // ─── Experience ───────────────────────────────────────────────────────────────
 export async function fetchExperiences(): Promise<SanityExperience[]> {
-  if (SANITY_READY) {
-    try {
-      const data = await getExperiences();
-      if (data?.length) return data;
-    } catch {}
-  }
-  return EXPERIENCES.map((e) => ({
-    company: e.company,
-    role: e.role,
-    period: e.period,
-    location: e.location,
-    responsibilities: e.responsibilities,
-    technologies: e.technologies,
-  }));
+  return safeFetch(getExperiences, [], 'experience');
+}
+
+// ─── Education ────────────────────────────────────────────────────────────────
+export async function fetchEducation(): Promise<SanityEducation[]> {
+  return safeFetch(getEducation, [], 'education');
+}
+
+// ─── Achievements ─────────────────────────────────────────────────────────────
+export async function fetchAchievements(): Promise<SanityAchievement[]> {
+  return safeFetch(getAchievements, [], 'achievements');
+}
+
+// ─── Hackathons ───────────────────────────────────────────────────────────────
+export async function fetchHackathons(): Promise<SanityHackathon[]> {
+  return safeFetch(getHackathons, [], 'hackathons');
 }
 
 // ─── Resume ───────────────────────────────────────────────────────────────────
 export async function fetchResume(): Promise<SanityResume | null> {
-  if (SANITY_READY) {
-    try {
-      const data = await getResume();
-      if (data?.resumeUrl) return data;
-    } catch {}
-  }
-  return {
-    resumeUrl: '/Mahendiran_S_Resume.pdf',
-    version: '2026 Official',
-    lastUpdated: 'August 2026',
-  };
+  return safeFetch(getResume, null, 'resume');
+}
+
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+export async function fetchTestimonials(): Promise<SanityTestimonial[]> {
+  return safeFetch(getTestimonials, [], 'testimonials');
+}
+
+// ─── Services ─────────────────────────────────────────────────────────────────
+export async function fetchServices(): Promise<SanityService[]> {
+  return safeFetch(getServices, [], 'services');
+}
+
+// ─── Social Links ─────────────────────────────────────────────────────────────
+export async function fetchSocialLinks(): Promise<SanitySocialLink[]> {
+  return safeFetch(getSocialLinks, [], 'social');
 }

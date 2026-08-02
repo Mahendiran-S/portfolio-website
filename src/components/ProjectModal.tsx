@@ -146,7 +146,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 Technologies & Tools Used
               </h3>
               <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech) => (
+                {(project.techStack ?? project.technologies ?? []).map((tech) => (
                   <span
                     key={tech}
                     className="px-3.5 py-1.5 rounded-full text-xs font-mono bg-white/10 text-white border border-white/15"

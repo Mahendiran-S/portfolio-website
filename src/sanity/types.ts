@@ -1,104 +1,209 @@
-// ─── Sanity CMS TypeScript Interfaces ─────────────────────────────────────────
+// ─── Sanity CMS TypeScript Types ─────────────────────────────────────────────
+// These interfaces match exactly what Sanity GROQ queries return (with resolved URLs)
 
 export interface SanityProfile {
+  _id?: string;
   name: string;
   role: string;
   tagline?: string;
-  aboutBio?: string;
-  college?: string;
-  location?: string;
   email?: string;
   phone?: string;
+  location?: string;
+  college?: string;
+  aboutBio?: string;
   availability?: string;
   yearsOfExperience?: number;
-  githubUrl?: string;
-  linkedinUrl?: string;
-  instagramUrl?: string;
+  // Resolved asset URLs (from GROQ projections)
   profilePhotoUrl?: string;
   resumeUrl?: string;
-}
-
-export interface SanityCertificate {
-  id: string;
-  title: string;
-  issuer: string;
-  category: 'AWS' | 'NPTEL' | 'Internship' | 'Hackathons' | 'Workshops';
-  date: string;
-  credentialId?: string;
-  downloadUrl?: string;
-  certificateImageUrl?: string;
-}
-
-export interface SanityProject {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  longDescription?: string;
-  technologies: string[];
-  features?: string[];
-  architectureDetails?: string;
+  // Social links
   githubUrl?: string;
-  liveUrl?: string;
-  status: 'Featured' | 'Completed' | 'In Development' | 'Production';
-  featured?: boolean;
-  displayOrder?: number;
-  imageUrl?: string;
-}
-
-export interface SanitySkill {
-  name: string;
-  category: 'Frontend' | 'Backend' | 'Tools';
-  level: number;
-  iconName: string;
-  description?: string;
-  displayOrder?: number;
+  githubUsername?: string;
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+  portfolioUrl?: string;
 }
 
 export interface SanityExperience {
+  _id?: string;
   company: string;
   role: string;
   employmentType?: string;
-  period: string;
   location?: string;
+  startDate?: string;
+  endDate?: string;
+  period?: string;   // alias — derived from startDate + endDate in GROQ
+  currentJob?: boolean;
+  description?: string;
+  responsibilities?: string[];
+  technologies?: string[];
   website?: string;
-  responsibilities: string[];
-  technologies: string[];
   displayOrder?: number;
+  featured?: boolean;
+  // Resolved
   logoUrl?: string;
 }
 
+export interface SanityProject {
+  _id?: string;
+  id?: string;  // _id alias used by components
+  title: string;
+  slug?: { current: string };
+  shortDescription?: string;
+  detailedDescription?: string;
+  longDescription?: string;  // alias for detailedDescription
+  description?: string;      // alias for shortDescription
+  problemStatement?: string;
+  solution?: string;
+  architecture?: string;
+  architectureDetails?: string;  // alias for architecture
+  features?: string[];
+  techStack?: string[];
+  technologies?: string[];  // alias for techStack
+  githubUrl?: string;
+  liveUrl?: string;
+  status?: string;
+  category?: string;
+  featured?: boolean;
+  displayOrder?: number;
+  completedDate?: string;
+  // Resolved
+  thumbnailUrl?: string;
+  imageUrl?: string;  // alias for thumbnailUrl
+  galleryImageUrls?: string[];
+}
+
+export interface SanityCertificate {
+  _id?: string;
+  id?: string;
+  title: string;
+  issuer: string;
+  issueDate?: string;
+  date?: string;  // alias for issueDate
+  expiryDate?: string;
+  credentialId?: string;
+  verificationUrl?: string;
+  downloadUrl?: string;
+  category?: string;
+  tags?: string[];
+  featured?: boolean;
+  // Resolved
+  certificateImageUrl?: string;
+}
+
+export interface SanitySkill {
+  _id?: string;
+  name: string;
+  category?: string;
+  percentage?: number;
+  level?: number;  // alias for percentage
+  iconName?: string;
+  description?: string;
+  featured?: boolean;
+  displayOrder?: number;
+}
+
 export interface SanityEducation {
+  _id?: string;
   college: string;
-  degree: string;
-  branch?: string;
+  degree?: string;
+  department?: string;
+  branch?: string;  // alias for department
   startYear?: string;
   endYear?: string;
   period?: string;
   cgpa?: string;
   description?: string;
+  displayOrder?: number;
+  // Resolved
   logoUrl?: string;
 }
 
 export interface SanityAchievement {
+  _id?: string;
   title: string;
   description?: string;
   date?: string;
   category?: string;
+  link?: string;
+  // Resolved
   imageUrl?: string;
 }
 
 export interface SanityHackathon {
+  _id?: string;
   eventName: string;
   organizer?: string;
   result?: string;
   description?: string;
   date?: string;
+  teamSize?: number;
+  prize?: string;
+  technologies?: string[];
+  // Resolved
   certificateUrl?: string;
 }
 
 export interface SanityResume {
-  resumeUrl: string;
-  lastUpdated?: string;
+  _id?: string;
   version?: string;
+  lastUpdated?: string;
+  notes?: string;
+  published?: boolean;
+  // Resolved
+  resumeUrl?: string;
+}
+
+export interface SanityTestimonial {
+  _id?: string;
+  name: string;
+  role?: string;
+  company?: string;
+  testimonial: string;
+  rating?: number;
+  featured?: boolean;
+  // Resolved
+  avatarUrl?: string;
+}
+
+export interface SanityService {
+  _id?: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  features?: string[];
+  price?: string;
+  featured?: boolean;
+  displayOrder?: number;
+}
+
+export interface SanityWorkshop {
+  _id?: string;
+  title: string;
+  organizer?: string;
+  description?: string;
+  date?: string;
+  duration?: string;
+  // Resolved
+  certificateUrl?: string;
+}
+
+export interface SanityPublication {
+  _id?: string;
+  title: string;
+  description?: string;
+  url?: string;
+  publisher?: string;
+  date?: string;
+  // Resolved
+  imageUrl?: string;
+}
+
+export interface SanitySocialLink {
+  _id?: string;
+  platform: string;
+  url: string;
+  handle?: string;
+  icon?: string;
 }
