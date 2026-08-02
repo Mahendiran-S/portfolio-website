@@ -78,13 +78,14 @@ export default function GithubSection() {
     fetchGithubTelemetry();
   }, [profile.username, profile.publicRepos, profile.followers]);
 
-  // Generate simulated 52-week contribution heat grid
+  // Generate deterministic 52-week contribution heat grid (prevents SSR/Client hydration mismatch)
   const generateContributionWeeks = () => {
     const weeks = [];
     for (let w = 0; w < 40; w++) {
       const days = [];
       for (let d = 0; d < 7; d++) {
-        const count = Math.floor(Math.random() * 8);
+        // Deterministic formula based on position (w, d)
+        const count = (w * 3 + d * 7 + 2) % 8;
         days.push(count);
       }
       weeks.push(days);
