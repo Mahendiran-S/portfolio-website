@@ -46,9 +46,9 @@ export function CertificateAutoFiller(props: any) {
         setLastExtracted(
           `Extracted: "${extracted.title ?? 'Certificate'}" issued by "${extracted.issuer ?? 'Unknown'}" (${extracted.category})`
         );
-      } catch (err) {
+      } catch (err: any) {
         console.error('Auto-fill error:', err);
-        setLastExtracted('Could not auto-read image. You can manually enter details below.');
+        setLastExtracted(err?.message || 'Could not auto-read image. You can manually enter details below.');
       } finally {
         setIsAnalyzing(false);
         setProgressStatus('');
@@ -121,7 +121,7 @@ export function CertificateAutoFiller(props: any) {
           <label style={{ cursor: isAnalyzing ? 'not-allowed' : 'pointer', display: 'block' }}>
             <input
               type="file"
-              accept="image/*,.pdf"
+              accept="image/png,image/jpeg,image/webp,image/jpg"
               onChange={handleFileUpload}
               style={{ display: 'none' }}
               disabled={isAnalyzing}

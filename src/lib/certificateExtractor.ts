@@ -10,6 +10,18 @@ export interface ExtractedCertificateData {
 }
 
 /**
+ * Converts a File or Blob object into a base64 Data URL so Tesseract.js can load it safely in browser context
+ */
+function fileToDataURL(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Parses raw text extracted from a certificate image using smart NLP/Regex rules
  */
 export function parseCertificateText(rawText: string): ExtractedCertificateData {
@@ -111,13 +123,26 @@ export function parseCertificateText(rawText: string): ExtractedCertificateData 
  * Runs OCR on an image File, Blob, or URL and extracts certificate fields
  */
 export async function extractCertificateFromImage(
-  imageSource: File | Blob | string,
-  onProgress?: (progress: number) => void
+  imageSource: File | Blob | string
 ): Promise<ExtractedCertificateData> {
+  let sourceToRecognize: string = '';
+
+  if (typeof imageSource === 'string') {
+    sourceToRecognize = imageSource;
+  } else {
+    // Check if it's a PDF file
+    const fileType = (imageSource as File).type || '';
+    const fileName = (imageSource as File).name || '';
+    if (fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf')) {
+      throw new Error('PDF files cannot be processed directly by OCR. Please upload an image of your certificate (PNG, JPG, WEBP).');
+    }
+    sourceToRecognize = await fileToDataURL(imageSource);
+  }
+
   const worker = await createWorker('eng');
 
   try {
-    const ret = await worker.recognize(imageSource);
+    const ret = await worker.recognize(sourceToRecognize);
     await worker.terminate();
     return parseCertificateText(ret.data.text);
   } catch (err) {
