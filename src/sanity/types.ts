@@ -27,6 +27,7 @@ export interface SanityProfile {
 
 export interface SanityExperience {
   _id?: string;
+  id?: string;  // _id alias
   company: string;
   role: string;
   employmentType?: string;

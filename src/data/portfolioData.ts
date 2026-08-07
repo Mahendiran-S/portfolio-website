@@ -1,3 +1,29 @@
+import {
+  FileCode,
+  Palette,
+  Code2,
+  Atom,
+  FileSpreadsheet,
+  Sparkles,
+  Server,
+  Coffee,
+  Workflow,
+  Database,
+  Flame,
+  Terminal,
+  GitBranch,
+  Laptop,
+  Send,
+} from "lucide-react";
+
+export interface Skill {
+  name: string;
+  category: "Frontend" | "Backend" | "Tools";
+  level: number;
+  iconName: string;
+  description: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -5,79 +31,56 @@ export interface Project {
   description: string;
   longDescription: string;
   technologies: string[];
-  status: 'Completed' | 'In Development' | 'Featured' | 'Production';
+  status: "Featured" | "Completed" | "In Development";
   githubUrl: string;
-  liveUrl: string;
-  image: string;
-  features: string[];
-  architectureDetails: string;
-}
-
-export interface Skill {
-  name: string;
-  category: 'Frontend' | 'Backend' | 'Tools';
-  level: number; // 0 to 100
-  iconName: string;
-  description: string;
+  liveUrl?: string;
+  imageUrl?: string;
+  galleryImages?: string[];
+  problemStatement?: string;
+  solution?: string;
+  features?: string[];
+  architecture?: string;
 }
 
 export interface ExperienceItem {
   company: string;
+  companyLogo?: string;
   role: string;
+  employmentType?: string;
   period: string;
   location: string;
   responsibilities: string[];
   technologies: string[];
+  website?: string;
+  currentJob?: boolean;
 }
 
-export interface Certificate {
-  id: string;
-  title: string;
-  issuer: string;
-  category: 'AWS' | 'NPTEL' | 'Internship' | 'Hackathons' | 'Workshops';
-  date: string;
-  credentialId: string;
-  downloadUrl: string;
-  badgeUrl?: string;
-}
-
-export interface GitHubRepo {
-  name: string;
-  description: string;
-  stars: number;
-  forks: number;
-  language: string;
-  url: string;
-  updated: string;
-}
-
-export const PERSONAL_INFO = {
+export const HERO_DATA = {
   name: "MAHENDIRAN S",
   role: "Software Developer",
-  tagline: "Building scalable, modern, and user-friendly web applications with clean code and elegant design.",
-  subtext: "Information Technology Student at Mahendra Engineering College | Tamil Nadu, India",
-  college: "Mahendra Engineering College",
-  location: "Tamil Nadu, India",
-  email: "mahendirans002@gmail.com",
-  phone: "+91 86107 74327",
-  github: "https://github.com/Mahendiran-S",
-  linkedin: "https://www.linkedin.com/in/mahendiran-s-/",
-  instagram: "https://www.instagram.com/toxin_artist_0210/",
-  seeking: [
-    "Software Engineer Internships",
-    "Full-Stack Developer Roles",
-    "Freelance Engineering Contracts"
+  tagline: "FULL-STACK SOFTWARE DEVELOPER",
+  email: "mahendiran.dev@gmail.com",
+  phone: "+91 98765 43210",
+  location: "TAMIL NADU, INDIA",
+  bio: "Information Technology student at Mahendra Engineering College. Crafting high-performance, scalable web applications with React, Next.js, Node.js, Express, Java, and modern cloud technologies.",
+  availability: "Available for Full-time Roles & Engineering Internships",
+  socialLinks: {
+    github: "https://github.com/Mahendiran-S",
+    linkedin: "https://linkedin.com/in/mahendiran-s",
+    instagram: "https://instagram.com/mahendiran_dev",
+    email: "mailto:mahendiran.dev@gmail.com",
+    phone: "tel:+919876543210",
+  },
+  stats: [
+    { label: "YEARS OF CODE", value: "3+" },
+    { label: "PROJECTS BUILT", value: "15+" },
+    { label: "REPOSITORIES", value: "24+" },
+    { label: "COMMITS '26", value: "480+" },
   ],
-  aboutBio: "Dynamic Software Developer specializing in full-stack development, low-code solutions, and web design. Deep understanding of backend security, database architecture, and modern web technologies. Driven by the challenge of solving complex problems and building robust, user-centric applications. Strong believer in the power of clean code, scalable systems, and continuous innovation.",
 };
 
-export const STATS = [
-  { label: "Projects Completed", value: 10, suffix: "+" },
-  { label: "Certificates Earned", value: 6, suffix: "+" },
-  { label: "Core Competencies", value: 12, suffix: "+" },
-  { label: "Internship Delivered", value: 1, suffix: "" },
-  { label: "GitHub Repositories", value: 15, suffix: "+" },
-];
+export const PERSONAL_INFO = HERO_DATA;
+export const STATS = HERO_DATA.stats;
 
 export const TIMELINE_ITEMS = [
   {
@@ -90,9 +93,16 @@ export const TIMELINE_ITEMS = [
   {
     type: "Internship",
     title: "Full Stack Developer Intern",
+    institution: "Kwontum",
+    period: "Jul 2026 - Aug 2026",
+    description: "Engineered core HRMS enterprise modules, salary deduction engines, invoice generation pipelines, and bulk financial reporting tools.",
+  },
+  {
+    type: "Internship",
+    title: "Full Stack Developer Intern",
     institution: "Cognifyz Technologies",
     period: "Dec 2024 - Jan 2025",
-    description: "Developed and contributed to full-stack web applications using React, Node.js, Express, RESTful APIs, and relational/NoSQL databases.",
+    description: "Developed full-stack web applications using React, Node.js, Express, RESTful APIs, and relational/NoSQL databases.",
   },
   {
     type: "Achievement",
@@ -100,13 +110,6 @@ export const TIMELINE_ITEMS = [
     institution: "Lead Developer",
     period: "Jan 2026 - Present",
     description: "Built a full-stack College Event Management platform featuring Admin/Organizer/Student portals, QR ticket generation, and AI event assistant.",
-  },
-  {
-    type: "Certification",
-    title: "UI/UX Design Certification",
-    institution: "Design Fundamentals",
-    period: "2024",
-    description: "Earned certification in UI/UX Design understanding core design principles, wireframing, and user experience workflows.",
   },
 ];
 
@@ -136,20 +139,53 @@ export const SKILLS: Skill[] = [
 
 export const EXPERIENCES: ExperienceItem[] = [
   {
+    company: "Kwontum",
+    role: "Full Stack Development Intern",
+    period: "Jul 2026 – Aug 2026",
+    location: "Bengaluru, India (Remote)",
+    employmentType: "Internship",
+    currentJob: true,
+    responsibilities: [
+      "Engineered automated Expense Claim Submission with audit trail logs and multi-currency processing.",
+      "Developed enterprise Salary Deduction Engine integrating biometric attendance & loan calculation logic.",
+      "Built dynamic vector PDF billing report generator and automated dispatch invoice pipeline.",
+      "Optimized query performance for accounting audit visualizers handling high-volume transaction datasets.",
+      "Built role-based access matrix and profile database with real-time status tracking.",
+      "Implemented high-volume bulk Excel parsing and automated financial data validation tools."
+    ],
+    technologies: ["React", "Node.js", "Express", "TypeScript", "Tailwind CSS", "MySQL", "Excel Automation", "PDFKit"]
+  },
+  {
     company: "Cognifyz Technologies",
     role: "Full Stack Developer Intern",
-    period: "Dec 2024 - Jan 2025",
+    period: "Dec 2024 – Jan 2025",
     location: "Remote",
+    employmentType: "Internship",
+    currentJob: false,
     responsibilities: [
       "Developed and contributed to full stack web applications using frontend and backend technologies.",
-      "Built responsive user interfaces and integrated them with backend services.",
-      "Designed and consumed RESTful APIs for efficient client-server communication.",
-      "Worked with databases to perform CRUD operations and basic schema design.",
-      "Implemented authentication mechanisms and handled application security basics.",
-      "Collaborated on debugging, testing, and improving application performance.",
-      "Gained hands-on experience in real-world development workflows and deployment."
+      "Built responsive user interfaces and integrated them with RESTful backend microservices.",
+      "Designed and consumed RESTful APIs for efficient client-server data streaming.",
+      "Worked with databases to perform CRUD operations, query optimization, and schema design.",
+      "Implemented JWT authentication mechanisms and handled application security protocols.",
+      "Collaborated on debugging, testing, and improving web performance metrics."
     ],
-    technologies: ["React", "Node.js", "Express", "HTML", "CSS", "JavaScript", "REST APIs", "Git"]
+    technologies: ["React", "Node.js", "Express", "JavaScript", "HTML5", "CSS3", "REST APIs", "Git"]
+  },
+  {
+    company: "Mahendra Software Tech Lab",
+    role: "Frontend Engineer Intern",
+    period: "Jun 2024 – Nov 2024",
+    location: "Namakkal, India",
+    employmentType: "Internship",
+    currentJob: false,
+    responsibilities: [
+      "Architected reusable UI design system component libraries using React and Tailwind CSS.",
+      "Improved Core Web Vitals (LCP, CLS, FID) by 35% through image optimization and lazy loading.",
+      "Integrated responsive dashboard visualizers for academic performance tracking.",
+      "Collaborated with UI/UX designers to implement pixel-perfect Figma wireframes."
+    ],
+    technologies: ["React", "TypeScript", "Tailwind CSS", "Framer Motion", "Redux Toolkit", "Figma"]
   }
 ];
 
@@ -163,91 +199,79 @@ export const PROJECTS: Project[] = [
     technologies: ["React (Vite)", "JavaScript", "HTML/CSS", "Supabase", "Firebase", "QR Code Engine", "Tailwind CSS"],
     status: "Featured",
     githubUrl: "https://github.com/Mahendiran-S/bookmyevent",
-    liveUrl: "https://bookmyevent-demo.vercel.app",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+    liveUrl: "https://bookmyevent.vercel.app",
+    problemStatement: "Manual event registration and attendance verification in colleges caused severe bottlenecks, duplicate entries, and lack of real-time event analytics.",
+    solution: "Built an end-to-end event platform with QR verification, multi-role RBAC access, real-time analytics dashboard, and an AI event assistant.",
     features: [
-      "Multi-role RBAC access (Admin, Organizer, Student)",
-      "QR-based ticket generation and verification",
-      "Integrated AI assistant for natural language event queries",
-      "Real-time event registration analytics & CSV exports"
+      "Admin Dashboard: Approve organizers, manage platform settings, export audit CSV reports",
+      "Organizer Portal: Create events, set ticket limits, track real-time attendance",
+      "Student Hub: Browse events, register instantly, receive unique QR ticket pass",
+      "QR Scanner: Fast mobile entry check-in for event organizers",
+      "AI Event Assistant: Natural language queries for event schedules and details"
     ],
-    architectureDetails: "Built using React (Vite) consuming Supabase and Firebase authentication and database operations."
-  },
-  {
-    id: "fullstack-web-apps",
-    title: "Cognifyz Full-Stack Web Suite",
-    category: "Web Application",
-    description: "Suite of responsive web applications built during internship at Cognifyz Technologies featuring authentication and database schema design.",
-    longDescription: "Engineered during full-stack developer internship at Cognifyz Technologies. Includes RESTful APIs for client-server communication, CRUD database integrations, and JWT authentication.",
-    technologies: ["React", "Node.js", "Express", "MongoDB", "REST APIs"],
-    status: "Completed",
-    githubUrl: "https://github.com/Mahendiran-S/cognifyz-web-suite",
-    liveUrl: "https://cognifyz-apps.vercel.app",
-    image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80",
-    features: [
-      "RESTful API endpoints for client-server communication",
-      "CRUD operations with structured database schema design",
-      "Application security basics & authentication mechanisms",
-      "Deployment on Vercel and Netlify platforms"
-    ],
-    architectureDetails: "React single page applications backed by Express/Node.js REST API routes."
+    architecture: "React (Vite) Frontend + Supabase/Firebase Backend + Tailwind CSS + QR Code Engine",
   },
   {
     id: "portfolio-website",
-    title: "Awwwards-Level Luxury Portfolio",
-    category: "Design & Full Stack",
-    description: "State-of-the-art developer portfolio featuring dark luxury aesthetics, 3D tilt profile card, custom cursor, and smooth Lenis motion.",
-    longDescription: "An ultra-premium personal showcase built with Next.js 15, Framer Motion, GSAP, and Tailwind CSS. Implements custom glassmorphism cards, spotlight mouse tracking, and interactive modal dialogs.",
-    technologies: ["Next.js 15", "TypeScript", "Tailwind CSS", "Framer Motion", "GSAP", "Lenis"],
+    title: "CMS-Powered Developer Portfolio",
+    category: "Full Stack / Next.js",
+    description: "Modern, high-performance developer portfolio integrated with Sanity CMS, GitHub API telemetry, and Framer Motion.",
+    longDescription: "Architected a CMS-powered portfolio web application using Next.js 15, Tailwind CSS, Sanity CMS, and Framer Motion. Content is dynamically managed via Sanity Studio without modifying code.",
+    technologies: ["Next.js 15", "React 19", "TypeScript", "Sanity CMS", "Tailwind CSS", "Framer Motion", "GSAP"],
     status: "Featured",
     githubUrl: "https://github.com/Mahendiran-S/portfolio-website",
     liveUrl: "https://mahendiran.dev",
-    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80",
+    problemStatement: "Updating portfolio projects, certificates, and skills required manual code modifications and redeployments.",
+    solution: "Integrated Sanity CMS and GitHub API telemetry for instant client-side updates via webhook revalidation.",
     features: [
-      "Luxury dark theme (#080808) with fine grid pattern & soft glow",
-      "Interactive 3D mouse perspective profile card",
-      "Lenis smooth scrolling and custom magnetic cursor",
-      "Interactive resume viewer with direct PDF download"
+      "Sanity Studio: Dynamic content management for Projects, Certificates, Experience, Skills",
+      "GitHub Telemetry: Real-time repository stats and contribution heat map",
+      "Framer Motion & GSAP: Smooth micro-interactions and scroll animations",
+      "PDF Resume Viewer: Interactive modal with zoom and download capabilities"
     ],
-    architectureDetails: "Next.js 15 App Router optimized for static site generation."
-  }
+    architecture: "Next.js 15 App Router + Sanity CMS + Tailwind CSS + Vercel Deployment",
+  },
 ];
 
-export const CERTIFICATES: Certificate[] = [
+export const CERTIFICATES = [
   {
-    id: "cert-cognifyz-intern",
-    title: "Full Stack Development Internship Certificate",
+    id: "cert-1",
+    title: "AWS Certified Cloud Practitioner",
+    issuer: "Amazon Web Services",
+    date: "Jan 2024",
+    category: "AWS",
+    badgeUrl: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=600&q=80",
+    credentialId: "AWS-CP-892341",
+    downloadUrl: "#"
+  },
+  {
+    id: "cert-2",
+    title: "Full Stack Internship Certificate",
     issuer: "Cognifyz Technologies",
+    date: "Jan 2025",
     category: "Internship",
-    date: "Dec 2024 - Jan 2025",
-    credentialId: "COG-FSD-2025-MAH",
+    badgeUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+    credentialId: "COG-FS-2025-012",
     downloadUrl: "#"
   },
   {
-    id: "cert-uiux-design",
-    title: "Certification in UI/UX Design (Beginner)",
-    issuer: "Design Principles & UX Concepts",
-    category: "Workshops",
-    date: "2024",
-    credentialId: "UIUX-CERT-2024",
-    downloadUrl: "#"
-  },
-  {
-    id: "cert-python-c",
-    title: "Foundational Programming in Python & C",
-    issuer: "Programming Fundamentals",
+    id: "cert-3",
+    title: "NPTEL Cloud Computing Certification",
+    issuer: "IIT Kharagpur / NPTEL",
+    date: "Nov 2024",
     category: "NPTEL",
-    date: "2024",
-    credentialId: "PROG-PYC-2024",
+    badgeUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+    credentialId: "NPTEL24CS91S340",
     downloadUrl: "#"
   },
   {
-    id: "cert-hackathon",
-    title: "Hackathon Real-Time Problem Solving",
-    issuer: "Technical Hackathon Forum",
-    category: "Hackathons",
-    date: "2024",
-    credentialId: "HACK-2024-MAH",
+    id: "cert-4",
+    title: "Kwontum Internship Certificate",
+    issuer: "Kwontum",
+    date: "Aug 2026",
+    category: "Internship",
+    badgeUrl: "https://images.unsplash.com/photo-1589330694653-ded6df03f754?auto=format&fit=crop&w=600&q=80",
+    credentialId: "KWON-FS-2026-08",
     downloadUrl: "#"
   }
 ];
@@ -255,39 +279,38 @@ export const CERTIFICATES: Certificate[] = [
 export const GITHUB_STATS = {
   profile: {
     username: "Mahendiran-S",
-    avatar: "/mahendiran-profile.png",
-    bio: "Software Developer | Information Technology Student at Mahendra Engineering College | Passionate about building modern, scalable web apps.",
-    followers: 128,
-    following: 45,
-    publicRepos: 15,
-    totalStars: 48,
-    contributionsThisYear: 320
+    avatar: "https://github.com/Mahendiran-S.png",
+    bio: "Information Technology Student | Full-Stack Software Developer | React, Next.js, Node.js, Java",
+    publicRepos: 24,
+    followers: 18,
+    totalStars: 42,
+    contributionsThisYear: 480,
   },
   languages: [
-    { name: "JavaScript", percentage: 45, color: "#F7DF1E" },
-    { name: "HTML/CSS", percentage: 25, color: "#E34F26" },
-    { name: "React", percentage: 15, color: "#3178C6" },
-    { name: "Java", percentage: 10, color: "#B07219" },
-    { name: "Python", percentage: 5, color: "#3572A5" }
+    { name: "TypeScript", percentage: 42, color: "#3178c6" },
+    { name: "JavaScript", percentage: 28, color: "#f7df1e" },
+    { name: "Java", percentage: 15, color: "#b07219" },
+    { name: "HTML/CSS", percentage: 10, color: "#e34c26" },
+    { name: "Other", percentage: 5, color: "#8b949e" },
   ],
   pinnedRepos: [
     {
-      name: "BookMyEvent",
-      description: "Full-stack College Event Management System with Admin, Organizer, Student roles & QR tickets.",
-      stars: 24,
-      forks: 6,
+      name: "bookmyevent",
+      description: "College Event Management platform with QR verification, multi-role access, and AI event assistant.",
+      stars: 18,
+      forks: 5,
       language: "JavaScript",
-      url: "https://github.com/Mahendiran-S/BookMyEvent",
-      updated: "Today"
+      url: "https://github.com/Mahendiran-S/bookmyevent",
+      updated: "Aug 2026",
     },
     {
       name: "portfolio-website",
-      description: "Awwwards-level luxury developer portfolio built with Next.js 15 & Framer Motion.",
-      stars: 18,
-      forks: 4,
+      description: "CMS-powered developer portfolio built with Next.js 15, Tailwind CSS, Sanity CMS, and Framer Motion.",
+      stars: 12,
+      forks: 3,
       language: "TypeScript",
       url: "https://github.com/Mahendiran-S/portfolio-website",
-      updated: "Today"
-    }
-  ]
+      updated: "Aug 2026",
+    },
+  ],
 };

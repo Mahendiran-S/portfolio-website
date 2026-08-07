@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Briefcase, CheckCircle2, Sparkles, Code, Cpu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Briefcase, CheckCircle2, Sparkles, Code, Cpu, ChevronDown, ExternalLink, Calendar, MapPin, Building2, Check } from "lucide-react";
 import type { SanityExperience } from "@/sanity/types";
 
 interface ExperienceProps {
   experiences: SanityExperience[];
 }
 
-// Static modules — these describe the internship modules and don't change unless hardcoded
-const MODULES = [
+const DEFAULT_MODULES = [
   { name: "Expense Management System", desc: "Automated claim submission, audit trail logs, multi-currency processing" },
   { name: "Salary Deduction Engine", desc: "Enterprise payroll calculation logic integrating biometric attendance & loan logic" },
   { name: "Invoice Automation", desc: "Dynamic vector PDF billing report generator and automated dispatch system" },
@@ -20,9 +19,11 @@ const MODULES = [
 ];
 
 export default function Experience({ experiences }: ExperienceProps) {
-  const exp = experiences[0];
+  // Select first experience as default active/expanded card
+  const initialActiveId = experiences[0]?._id || experiences[0]?.id || "exp-0";
+  const [activeId, setActiveId] = useState<string>(initialActiveId);
 
-  if (!exp) {
+  if (!experiences || experiences.length === 0) {
     return (
       <section id="experience" className="py-28 relative">
         <div className="w-[92%] max-w-7xl mx-auto text-center text-gray-500 py-20 font-mono text-sm">
@@ -32,98 +33,219 @@ export default function Experience({ experiences }: ExperienceProps) {
     );
   }
 
+  const activeExp = experiences.find((e) => (e._id || e.id) === activeId) || experiences[0];
+
   return (
     <section id="experience" className="py-28 relative">
       <div className="w-[92%] max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="flex flex-col mb-16">
+        <div className="flex flex-col mb-14">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-white" />
-            <span>03 / WORK EXPERIENCE</span>
+            <span>03 / WORK EXPERIENCE & INTERNSHIPS</span>
           </div>
           <h2 className="text-4xl sm:text-6xl font-bold font-space tracking-tight text-white uppercase">
             ENTERPRISE <span className="text-stroke-outline">EXPERIENCE</span>
           </h2>
         </div>
 
-        {/* Main Experience Showcase Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="glass-card rounded-3xl p-8 sm:p-12 border border-white/15 shadow-2xl relative overflow-hidden"
-        >
-          {/* Top Info Banner */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-white/10">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white text-black">
-                  {exp.company}
-                </span>
-                <span className="text-xs font-mono text-gray-400">{exp.location}</span>
-              </div>
-              <h3 className="text-3xl font-bold text-white font-space tracking-tight">{exp.role}</h3>
-            </div>
-            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-gray-300 w-fit">
-              <span>{exp.period}</span>
-            </div>
-          </div>
+        {/* Top View: Currently Expanded Active Experience Showcase Card */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeExp._id || activeExp.id || activeExp.company}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="glass-card rounded-3xl p-7 sm:p-10 border border-white/15 shadow-2xl relative overflow-hidden mb-10 bg-[#0c0c0e]/90"
+          >
+            {/* Top Header Banner */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-white/10">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold font-space text-xl shrink-0 shadow-lg">
+                  {activeExp.logoUrl ? (
+                    <img src={activeExp.logoUrl} alt={activeExp.company} className="w-full h-full object-cover rounded-2xl" />
+                  ) : (
+                    activeExp.company.charAt(0)
+                  )}
+                </div>
 
-          {/* Module Breakdown Grid */}
-          <div className="mb-10">
-            <h4 className="text-sm font-mono text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-white" />
-              Core Modules Engineered & Built:
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MODULES.map((mod) => (
-                <div
-                  key={mod.name}
-                  className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/25 transition-all group"
-                >
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <CheckCircle2 className="w-4 h-4 text-white shrink-0 group-hover:scale-110 transition-transform" />
-                    <h5 className="font-bold text-white text-sm tracking-tight">{mod.name}</h5>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="px-3 py-0.5 rounded-full text-xs font-mono font-bold bg-white text-black">
+                      {activeExp.company}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/15">
+                      {activeExp.employmentType || "Internship"}
+                    </span>
+                    {activeExp.currentJob && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Current Role
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-400 leading-relaxed pl-6">{mod.desc}</p>
+                  <h3 className="text-2xl sm:text-4xl font-bold text-white font-space tracking-tight">
+                    {activeExp.role}
+                  </h3>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex flex-col md:items-end gap-2 text-xs font-mono text-gray-400 shrink-0">
+                <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-gray-200 flex items-center gap-2 w-fit">
+                  <Calendar className="w-3.5 h-3.5 text-white/60" />
+                  <span>{activeExp.period || `${activeExp.startDate ?? ''} – ${activeExp.endDate ?? ''}`}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-gray-400 pl-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{activeExp.location || "Remote"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Core Engineered Modules */}
+            <div className="mb-8">
+              <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-white" />
+                Core Modules Engineered & Built:
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {DEFAULT_MODULES.map((mod) => (
+                  <div
+                    key={mod.name}
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/25 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-white shrink-0 group-hover:scale-110 transition-transform" />
+                      <h5 className="font-bold text-white text-xs tracking-tight">{mod.name}</h5>
+                    </div>
+                    <p className="text-[11px] text-gray-400 leading-relaxed pl-6">{mod.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Impact & Key Responsibilities List */}
+            <div className="mb-8">
+              <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-white" />
+                Key Impact & Responsibilities:
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(activeExp.responsibilities ?? []).map((resp, i) => (
+                  <div key={i} className="flex items-start gap-2.5 text-xs text-gray-300 leading-relaxed p-2.5 rounded-xl bg-white/[0.01] border border-white/5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/60 mt-1.5 shrink-0" />
+                    <span>{resp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Technologies Used & Website Link */}
+            <div className="pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-mono text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-1">
+                  <Code className="w-3.5 h-3.5" /> Stack:
+                </span>
+                {(activeExp.technologies ?? []).map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/10 text-white border border-white/15"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              {activeExp.website && (
+                <a
+                  href={activeExp.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
+                >
+                  <span>Company Website</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Bottom Timeline List: All Experiences Accordion Stack */}
+        {experiences.length > 1 && (
+          <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10">
+            <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-white" />
+              All Experiences & Timeline ({experiences.length})
+            </h3>
+
+            {/* Scrollable Container for Infinite Experiences Sizing */}
+            <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
+              {experiences.map((expItem, idx) => {
+                const id = expItem._id || expItem.id || `exp-${idx}`;
+                const isActive = id === activeId;
+                const periodText = expItem.period || `${expItem.startDate ?? ''} – ${expItem.endDate ?? ''}`;
+
+                return (
+                  <motion.div
+                    key={id}
+                    onClick={() => setActiveId(id)}
+                    whileHover={{ scale: 1.005 }}
+                    transition={{ duration: 0.2 }}
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 h-[95px] ${
+                      isActive
+                        ? "bg-white/10 border-white/30 shadow-lg"
+                        : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold font-space text-base shrink-0 ${
+                        isActive ? "bg-white text-black" : "bg-white/10 border border-white/15 text-white"
+                      }`}>
+                        {expItem.logoUrl ? (
+                          <img src={expItem.logoUrl} alt={expItem.company} className="w-full h-full object-cover rounded-xl" />
+                        ) : (
+                          expItem.company.charAt(0)
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h4 className="font-bold font-space text-white text-sm sm:text-base truncate">
+                            {expItem.company}
+                          </h4>
+                          {expItem.currentJob && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 font-mono truncate">
+                          {expItem.role}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0">
+                      <span className="hidden sm:inline text-xs font-mono text-gray-400">
+                        {periodText}
+                      </span>
+                      <div className={`p-2 rounded-full border transition-transform duration-300 ${
+                        isActive
+                          ? "bg-white text-black border-white rotate-180"
+                          : "bg-white/5 border-white/10 text-gray-400"
+                      }`}>
+                        <ChevronDown className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          {/* Key Responsibilities Bullet List */}
-          <div className="mb-10">
-            <h4 className="text-sm font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-white" />
-              Impact & Key Responsibilities:
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {(exp.responsibilities ?? []).map((resp, i) => (
-                <div key={i} className="flex items-start gap-3 text-xs text-gray-300 leading-relaxed">
-                  <span className="font-mono text-white/50 text-[10px] mt-0.5">•</span>
-                  <span>{resp}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Technologies Used Footer */}
-          <div className="pt-6 border-t border-white/10 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-mono text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-1">
-              <Code className="w-3.5 h-3.5" /> Stack:
-            </span>
-            {(exp.technologies ?? []).map((tech) => (
-              <span
-                key={tech}
-                className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/10 text-white border border-white/15"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </section>
   );
