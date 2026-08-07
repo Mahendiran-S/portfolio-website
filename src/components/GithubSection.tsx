@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GITHUB_STATS } from "@/data/portfolioData";
-import { Star, GitFork, BookOpen, ExternalLink, Sparkles, Code2, Flame, Zap, AlertTriangle, Calendar } from "lucide-react";
+import { Star, GitFork, BookOpen, ExternalLink, Sparkles, Code2, Flame, Zap, AlertTriangle, Calendar, Users } from "lucide-react";
 import { GithubIcon } from "@/components/SocialIcons";
-import type { GithubContributionsResponse, ContributionDay } from "@/app/api/github-contributions/route";
+import type { GithubCombinedResponse, ContributionDay } from "@/app/api/github-contributions/route";
 
 export default function GithubSection() {
-  const { profile, pinnedRepos } = GITHUB_STATS;
+  const { profile } = GITHUB_STATS;
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [telemetry, setTelemetry] = useState<GithubContributionsResponse | null>(null);
+  const [telemetry, setTelemetry] = useState<GithubCombinedResponse | null>(null);
   const [hoveredDay, setHoveredDay] = useState<{ day: ContributionDay; x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function GithubSection() {
       try {
         const res = await fetch(`/api/github-contributions?username=${profile.username}`);
         if (!res.ok) throw new Error("Failed to fetch contribution telemetry");
-        const data: GithubContributionsResponse = await res.json();
+        const data: GithubCombinedResponse = await res.json();
         setTelemetry(data);
       } catch (err) {
         console.warn("Using default fallback contribution telemetry:", err);
@@ -54,6 +54,10 @@ export default function GithubSection() {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
+  const currentRepos = telemetry?.pinnedRepos && telemetry.pinnedRepos.length > 0
+    ? telemetry.pinnedRepos
+    : GITHUB_STATS.pinnedRepos;
+
   return (
     <section id="github" className="py-28 relative">
       <div className="w-[92%] max-w-7xl mx-auto">
@@ -62,7 +66,7 @@ export default function GithubSection() {
         <div className="flex flex-col mb-14">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-white" />
-            <span>06 / GRAPHQL OPEN SOURCE TELEMETRY</span>
+            <span>06 / REST & GRAPHQL OPEN SOURCE TELEMETRY</span>
           </div>
           <h2 className="text-4xl sm:text-6xl font-bold font-space tracking-tight text-white uppercase">
             GITHUB <span className="text-stroke-outline">CONTRIBUTIONS</span>
@@ -319,7 +323,7 @@ export default function GithubSection() {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {pinnedRepos.map((repo, idx) => (
+            {currentRepos.map((repo: any, idx: number) => (
               <motion.a
                 key={repo.name}
                 href={repo.url}
@@ -348,7 +352,7 @@ export default function GithubSection() {
                 <div className="flex items-center justify-between text-xs font-mono text-gray-400 pt-4 border-t border-white/5">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1 text-white">
-                      <span className="w-2 h-2 rounded-full bg-white" />
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: repo.languageColor || '#3178c6' }} />
                       {repo.language}
                     </span>
                     <span className="flex items-center gap-1 hover:text-white">

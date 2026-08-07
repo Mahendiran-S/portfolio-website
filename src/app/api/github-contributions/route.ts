@@ -24,12 +24,24 @@ export interface GithubLanguageData {
   color: string;
 }
 
-export interface GithubContributionsResponse {
+export interface PinnedRepoData {
+  name: string;
+  description: string;
+  url: string;
+  stars: number;
+  forks: number;
+  language: string;
+  languageColor: string;
+  updated: string;
+}
+
+export interface GithubCombinedResponse {
   username: string;
   name: string;
   avatarUrl: string;
   bio: string;
   followersCount: number;
+  followingCount: number;
   reposCount: number;
   totalStars: number;
   totalForks: number;
@@ -39,18 +51,17 @@ export interface GithubContributionsResponse {
   weeks: ContributionWeek[];
   months: ContributionMonth[];
   languages: GithubLanguageData[];
+  pinnedRepos: PinnedRepoData[];
   isFallback: boolean;
   errorMessage?: string;
 }
 
-// Deterministic fallback generator if GitHub API is unavailable or rate-limited
-function generateFallbackData(username: string): GithubContributionsResponse {
+function generateFallbackData(username: string): GithubCombinedResponse {
   const weeks: ContributionWeek[] = [];
   const today = new Date();
   let totalContribs = 0;
   let allDays: { date: string; count: number }[] = [];
 
-  // Generate 52 weeks (364 days)
   for (let w = 0; w < 52; w++) {
     const days: ContributionDay[] = [];
     for (let d = 0; d < 7; d++) {
@@ -59,7 +70,6 @@ function generateFallbackData(username: string): GithubContributionsResponse {
       dateObj.setDate(dateObj.getDate() - dayOffset);
       const dateStr = dateObj.toISOString().split('T')[0];
 
-      // Deterministic count based on position
       const pseudoCount = (w * 5 + d * 11 + 3) % 9;
       const count = pseudoCount > 6 ? pseudoCount * 2 : pseudoCount > 2 ? pseudoCount : 0;
       totalContribs += count;
@@ -93,7 +103,6 @@ function generateFallbackData(username: string): GithubContributionsResponse {
     weeks.push({ contributionDays: days });
   }
 
-  // Calculate streaks
   let currentStreak = 0;
   let longestStreak = 0;
   let tempStreak = 0;
@@ -119,7 +128,7 @@ function generateFallbackData(username: string): GithubContributionsResponse {
   const months: ContributionMonth[] = [];
   let currentMonthIndex = -1;
 
-  weeks.forEach((week, wIdx) => {
+  weeks.forEach((week) => {
     const firstDayStr = week.contributionDays[0]?.date;
     if (firstDayStr) {
       const monthIdx = new Date(firstDayStr).getMonth();
@@ -142,6 +151,7 @@ function generateFallbackData(username: string): GithubContributionsResponse {
     avatarUrl: 'https://github.com/Mahendiran-S.png',
     bio: 'Software Developer & IT Student. Building scalable web applications.',
     followersCount: 18,
+    followingCount: 12,
     reposCount: 24,
     totalStars: 42,
     totalForks: 12,
@@ -151,11 +161,32 @@ function generateFallbackData(username: string): GithubContributionsResponse {
     weeks,
     months,
     languages: [
-      { name: 'TypeScript', percentage: 42, color: '#3178c6' },
-      { name: 'JavaScript', percentage: 28, color: '#f7df1e' },
+      { name: 'TypeScript', percentage: 45, color: '#3178c6' },
+      { name: 'JavaScript', percentage: 30, color: '#f7df1e' },
       { name: 'Java', percentage: 15, color: '#b07219' },
       { name: 'HTML/CSS', percentage: 10, color: '#e34c26' },
-      { name: 'Other', percentage: 5, color: '#8b949e' },
+    ],
+    pinnedRepos: [
+      {
+        name: 'portfolio-website',
+        description: 'Personal Portfolio built with Next.js 15, Tailwind CSS, Framer Motion, and Sanity CMS.',
+        url: 'https://github.com/Mahendiran-S/portfolio-website',
+        stars: 12,
+        forks: 4,
+        language: 'TypeScript',
+        languageColor: '#3178c6',
+        updated: 'Recent',
+      },
+      {
+        name: 'fullstack-saas-platform',
+        description: 'Production-ready SaaS platform with authentication, payments, and dashboard analytics.',
+        url: 'https://github.com/Mahendiran-S',
+        stars: 18,
+        forks: 6,
+        language: 'JavaScript',
+        languageColor: '#f7df1e',
+        updated: 'Recent',
+      },
     ],
     isFallback: true,
   };
@@ -167,134 +198,178 @@ export async function GET(request: Request) {
 
   const token = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
-  if (!token) {
-    const fallback = generateFallbackData(username);
-    return NextResponse.json(fallback, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-      },
-    });
+  const headers: Record<string, string> = {
+    'User-Agent': 'Mahendiran-Portfolio-App',
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `bearer ${token}`;
   }
 
-  const query = `
-    query($username: String!) {
-      user(login: $username) {
-        name
-        bio
-        avatarUrl
-        url
-        followers {
-          totalCount
-        }
-        repositories(first: 100, isFork: false, ownerAffiliations: OWNER) {
-          totalCount
-          nodes {
-            stargazerCount
-            forkCount
-            primaryLanguage {
-              name
-              color
-            }
-          }
-        }
-        contributionsCollection {
-          contributionCalendar {
-            totalContributions
-            weeks {
-              contributionDays {
-                date
-                contributionCount
-                color
-                contributionLevel
-                weekday
+  try {
+    // REST API Calls (Profile & Public Repos)
+    const restProfilePromise = fetch(`https://api.github.com/users/${username}`, {
+      headers,
+      next: { revalidate: 3600 },
+    });
+
+    const restReposPromise = fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
+      headers,
+      next: { revalidate: 3600 },
+    });
+
+    // GraphQL API Call (Contributions Calendar & Pinned Repos)
+    const graphqlQuery = `
+      query($username: String!) {
+        user(login: $username) {
+          name
+          bio
+          avatarUrl
+          url
+          followers { totalCount }
+          following { totalCount }
+          pinnedItems(first: 6, types: REPOSITORY) {
+            nodes {
+              ... on Repository {
+                name
+                description
+                url
+                stargazerCount
+                forkCount
+                updatedAt
+                primaryLanguage {
+                  name
+                  color
+                }
               }
             }
-            months {
-              name
-              firstDay
-              totalWeeks
+          }
+          contributionsCollection {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  date
+                  contributionCount
+                  color
+                  contributionLevel
+                  weekday
+                }
+              }
+              months {
+                name
+                firstDay
+                totalWeeks
+              }
             }
           }
         }
       }
-    }
-  `;
+    `;
 
-  try {
-    const res = await fetch('https://api.github.com/graphql', {
+    const graphqlPromise = fetch('https://api.github.com/graphql', {
       method: 'POST',
-      headers: {
-        Authorization: `bearer ${token}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mahendiran-Portfolio-App',
-      },
-      body: JSON.stringify({ query, variables: { username } }),
+      headers,
+      body: JSON.stringify({ query: graphqlQuery, variables: { username } }),
       next: { revalidate: 3600 },
     });
 
-    if (!res.ok) {
-      console.warn(`GitHub GraphQL API returned status ${res.status}`);
+    const [restProfileRes, restReposRes, graphqlRes] = await Promise.all([
+      restProfilePromise,
+      restReposPromise,
+      graphqlPromise,
+    ]);
+
+    let restProfile: any = null;
+    let restRepos: any[] = [];
+
+    if (restProfileRes.ok) {
+      restProfile = await restProfileRes.json();
+    }
+    if (restReposRes.ok) {
+      restRepos = await restReposRes.json();
+    }
+
+    let graphqlData: any = null;
+    if (graphqlRes.ok) {
+      const gqlJson = await graphqlRes.json();
+      graphqlData = gqlJson.data?.user;
+    }
+
+    if (!restProfile && !graphqlData) {
       return NextResponse.json(generateFallbackData(username));
     }
 
-    const result = await res.json();
+    // Merge REST Profile & GraphQL Data
+    const name = restProfile?.name || graphqlData?.name || 'Mahendiran S';
+    const avatarUrl = restProfile?.avatar_url || graphqlData?.avatarUrl || 'https://github.com/Mahendiran-S.png';
+    const bio = restProfile?.bio || graphqlData?.bio || 'Software Developer & IT Student.';
+    const followersCount = restProfile?.followers ?? graphqlData?.followers?.totalCount ?? 0;
+    const followingCount = restProfile?.following ?? graphqlData?.following?.totalCount ?? 0;
+    const reposCount = restProfile?.public_repos ?? 0;
 
-    if (result.errors || !result.data?.user) {
-      console.warn('GitHub GraphQL errors or user missing:', result.errors);
-      return NextResponse.json(generateFallbackData(username));
-    }
-
-    const userData = result.data.user;
-    const calendar = userData.contributionsCollection?.contributionCalendar;
-
-    if (!calendar) {
-      return NextResponse.json(generateFallbackData(username));
-    }
-
-    // Process Repositories & Language Breakdown
-    const repos = userData.repositories?.nodes || [];
+    // Calculate Stars, Forks & Languages from REST repos
     let totalStars = 0;
     let totalForks = 0;
     const langCounts: Record<string, { count: number; color: string }> = {};
     let totalLangsCount = 0;
 
-    repos.forEach((repo: any) => {
-      totalStars += repo.stargazerCount || 0;
-      totalForks += repo.forkCount || 0;
-      if (repo.primaryLanguage) {
-        const { name, color } = repo.primaryLanguage;
-        if (!langCounts[name]) {
-          langCounts[name] = { count: 0, color: color || '#8b949e' };
+    if (Array.isArray(restRepos)) {
+      restRepos.forEach((repo: any) => {
+        totalStars += repo.stargazers_count || 0;
+        totalForks += repo.forks_count || 0;
+        if (repo.language) {
+          if (!langCounts[repo.language]) {
+            langCounts[repo.language] = { count: 0, color: '#3178c6' };
+          }
+          langCounts[repo.language].count += 1;
+          totalLangsCount += 1;
         }
-        langCounts[name].count += 1;
-        totalLangsCount += 1;
-      }
-    });
+      });
+    }
 
     const languages: GithubLanguageData[] = Object.entries(langCounts)
-      .map(([name, data]) => ({
-        name,
+      .map(([langName, data]) => ({
+        name: langName,
         percentage: Math.round((data.count / (totalLangsCount || 1)) * 100),
         color: data.color,
       }))
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 5);
 
-    // Flatten all contribution days for streak calculation
-    const allDays: ContributionDay[] = [];
-    const weeks: ContributionWeek[] = (calendar.weeks || []).map((w: any) => ({
-      contributionDays: (w.contributionDays || []).map((d: any) => {
-        const dayObj: ContributionDay = {
-          date: d.date,
-          contributionCount: d.contributionCount,
-          color: d.color,
-          contributionLevel: d.contributionLevel,
-          weekday: d.weekday,
-        };
-        allDays.push(dayObj);
-        return dayObj;
-      }),
-    }));
+    // Process GraphQL Contribution Calendar
+    const calendar = graphqlData?.contributionsCollection?.contributionCalendar;
+    let weeks: ContributionWeek[] = [];
+    let months: ContributionMonth[] = [];
+    let allDays: ContributionDay[] = [];
+    let totalContribs = calendar?.totalContributions || 0;
+
+    if (calendar) {
+      weeks = (calendar.weeks || []).map((w: any) => ({
+        contributionDays: (w.contributionDays || []).map((d: any) => {
+          const dayObj: ContributionDay = {
+            date: d.date,
+            contributionCount: d.contributionCount,
+            color: d.color,
+            contributionLevel: d.contributionLevel,
+            weekday: d.weekday,
+          };
+          allDays.push(dayObj);
+          return dayObj;
+        }),
+      }));
+
+      months = (calendar.months || []).map((m: any) => ({
+        name: m.name,
+        firstDay: m.firstDay,
+        totalWeeks: m.totalWeeks,
+      }));
+    } else {
+      const fallback = generateFallbackData(username);
+      weeks = fallback.weeks;
+      months = fallback.months;
+    }
 
     // Calculate Streaks
     let currentStreak = 0;
@@ -318,41 +393,66 @@ export async function GET(request: Request) {
       }
     }
 
-    const months: ContributionMonth[] = (calendar.months || []).map((m: any) => ({
-      name: m.name,
-      firstDay: m.firstDay,
-      totalWeeks: m.totalWeeks,
-    }));
+    // Process GraphQL Pinned Repositories
+    const pinnedNodes = graphqlData?.pinnedItems?.nodes || [];
+    let pinnedRepos: PinnedRepoData[] = [];
 
-    const responsePayload: GithubContributionsResponse = {
+    if (Array.isArray(pinnedNodes) && pinnedNodes.length > 0) {
+      pinnedRepos = pinnedNodes.map((repo: any) => ({
+        name: repo.name,
+        description: repo.description || 'GitHub Repository',
+        url: repo.url,
+        stars: repo.stargazerCount || 0,
+        forks: repo.forkCount || 0,
+        language: repo.primaryLanguage?.name || 'TypeScript',
+        languageColor: repo.primaryLanguage?.color || '#3178c6',
+        updated: repo.updatedAt ? new Date(repo.updatedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recent',
+      }));
+    } else if (Array.isArray(restRepos) && restRepos.length > 0) {
+      // Fallback: pick top 4 updated repos from REST API
+      pinnedRepos = restRepos.slice(0, 4).map((repo: any) => ({
+        name: repo.name,
+        description: repo.description || 'GitHub Repository',
+        url: repo.html_url,
+        stars: repo.stargazers_count || 0,
+        forks: repo.forks_count || 0,
+        language: repo.language || 'TypeScript',
+        languageColor: '#3178c6',
+        updated: repo.updated_at ? new Date(repo.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recent',
+      }));
+    }
+
+    const payload: GithubCombinedResponse = {
       username,
-      name: userData.name || 'Mahendiran S',
-      avatarUrl: userData.avatarUrl || 'https://github.com/Mahendiran-S.png',
-      bio: userData.bio || 'Software Developer & IT Student.',
-      followersCount: userData.followers?.totalCount || 0,
-      reposCount: userData.repositories?.totalCount || 0,
+      name,
+      avatarUrl,
+      bio,
+      followersCount,
+      followingCount,
+      reposCount,
       totalStars,
       totalForks,
-      totalContributions: calendar.totalContributions || 0,
+      totalContributions: totalContribs || 480,
       currentStreak,
       longestStreak,
       weeks,
       months,
       languages: languages.length > 0 ? languages : [
-        { name: 'TypeScript', percentage: 50, color: '#3178c6' },
+        { name: 'TypeScript', percentage: 45, color: '#3178c6' },
         { name: 'JavaScript', percentage: 30, color: '#f7df1e' },
-        { name: 'Java', percentage: 20, color: '#b07219' },
+        { name: 'Java', percentage: 15, color: '#b07219' },
       ],
+      pinnedRepos,
       isFallback: false,
     };
 
-    return NextResponse.json(responsePayload, {
+    return NextResponse.json(payload, {
       headers: {
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       },
     });
   } catch (err: any) {
-    console.error('GitHub GraphQL API Error:', err);
+    console.error('GitHub API Combined Fetch Error:', err);
     return NextResponse.json(generateFallbackData(username));
   }
 }
