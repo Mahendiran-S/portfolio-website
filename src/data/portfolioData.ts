@@ -171,21 +171,6 @@ export const EXPERIENCES: ExperienceItem[] = [
       "Collaborated on debugging, testing, and improving web performance metrics."
     ],
     technologies: ["React", "Node.js", "Express", "JavaScript", "HTML5", "CSS3", "REST APIs", "Git"]
-  },
-  {
-    company: "Mahendra Software Tech Lab",
-    role: "Frontend Engineer Intern",
-    period: "Jun 2024 – Nov 2024",
-    location: "Namakkal, India",
-    employmentType: "Internship",
-    currentJob: false,
-    responsibilities: [
-      "Architected reusable UI design system component libraries using React and Tailwind CSS.",
-      "Improved Core Web Vitals (LCP, CLS, FID) by 35% through image optimization and lazy loading.",
-      "Integrated responsive dashboard visualizers for academic performance tracking.",
-      "Collaborated with UI/UX designers to implement pixel-perfect Figma wireframes."
-    ],
-    technologies: ["React", "TypeScript", "Tailwind CSS", "Framer Motion", "Redux Toolkit", "Figma"]
   }
 ];
 
