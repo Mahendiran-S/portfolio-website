@@ -25,6 +25,11 @@ export interface SanityProfile {
   portfolioUrl?: string;
 }
 
+export interface SanityExperienceCoreModule {
+  title: string;
+  description?: string;
+}
+
 export interface SanityExperience {
   _id?: string;
   id?: string;  // _id alias
@@ -32,16 +37,22 @@ export interface SanityExperience {
   role: string;
   employmentType?: string;
   location?: string;
+  remote?: boolean;
   startDate?: string;
   endDate?: string;
-  period?: string;   // alias — derived from startDate + endDate in GROQ
+  period?: string;   // alias — derived from startDate + endDate
   currentJob?: boolean;
+  shortDescription?: string;
   description?: string;
+  coreModules?: SanityExperienceCoreModule[];
   responsibilities?: string[];
   technologies?: string[];
+  achievements?: string[];
   website?: string;
   displayOrder?: number;
   featured?: boolean;
+  published?: boolean;
+  themeColor?: string;
   // Resolved
   logoUrl?: string;
 }

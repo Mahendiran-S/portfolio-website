@@ -101,8 +101,9 @@ export async function getSkills(): Promise<SanitySkill[]> {
 export async function getExperiences(): Promise<SanityExperience[]> {
   return sanityClient.fetch(
     groq`*[_type == "experience" && published == true] | order(displayOrder asc, startDate desc){
-      _id, company, role, employmentType, location, startDate, endDate,
-      currentJob, description, responsibilities, technologies, website, displayOrder, featured,
+      _id, company, role, employmentType, location, remote, startDate, endDate,
+      currentJob, shortDescription, description, coreModules, responsibilities, technologies,
+      achievements, website, displayOrder, featured, published, themeColor,
       "period": select(
         currentJob == true => startDate + " – Present",
         endDate != null => startDate + " – " + endDate,

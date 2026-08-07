@@ -30,17 +30,32 @@ export const experience = defineType({
       },
       initialValue: 'Internship',
     }),
-    defineField({ name: 'location', title: 'Location', type: 'string', placeholder: 'e.g. Remote / Chennai, India' }),
-    defineField({ name: 'startDate', title: 'Start Date', type: 'string', placeholder: 'e.g. Jan 2024', validation: (R) => R.required() }),
-    defineField({ name: 'endDate', title: 'End Date', type: 'string', placeholder: 'e.g. Jun 2024 (leave empty if current)' }),
-    defineField({ name: 'currentJob', title: 'Currently Working Here?', type: 'boolean', initialValue: false }),
-    defineField({ name: 'description', title: 'Summary', type: 'text', rows: 3 }),
+    defineField({ name: 'location', title: 'Location', type: 'string', placeholder: 'e.g. Bengaluru / Remote' }),
+    defineField({ name: 'remote', title: 'Is Remote?', type: 'boolean', initialValue: false }),
+    defineField({ name: 'startDate', title: 'Start Date', type: 'string', placeholder: 'e.g. Jul 2026', validation: (R) => R.required() }),
+    defineField({ name: 'endDate', title: 'End Date', type: 'string', placeholder: 'e.g. Aug 2026 or Present' }),
+    defineField({ name: 'currentJob', title: 'Current Position?', type: 'boolean', initialValue: false }),
+    defineField({ name: 'shortDescription', title: 'Short Overview', type: 'text', rows: 2 }),
+    defineField({
+      name: 'coreModules',
+      title: 'Core Modules Engineered',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: 'Module',
+          fields: [
+            defineField({ name: 'title', title: 'Module Title', type: 'string', validation: (R) => R.required() }),
+            defineField({ name: 'description', title: 'Description', type: 'string' }),
+          ],
+        },
+      ],
+    }),
     defineField({
       name: 'responsibilities',
-      title: 'Key Responsibilities',
+      title: 'Key Responsibilities & Impact',
       type: 'array',
       of: [{ type: 'string' }],
-      options: { layout: 'tags' },
     }),
     defineField({
       name: 'technologies',
@@ -49,10 +64,17 @@ export const experience = defineType({
       of: [{ type: 'string' }],
       options: { layout: 'tags' },
     }),
-    defineField({ name: 'website', title: 'Company Website', type: 'url' }),
-    defineField({ name: 'displayOrder', title: 'Display Order', type: 'number', initialValue: 0 }),
-    defineField({ name: 'featured', title: 'Featured?', type: 'boolean', initialValue: false }),
+    defineField({
+      name: 'achievements',
+      title: 'Key Achievements (optional)',
+      type: 'array',
+      of: [{ type: 'string' }],
+    }),
+    defineField({ name: 'website', title: 'Company Website URL', type: 'url' }),
+    defineField({ name: 'displayOrder', title: 'Display Order (lower numbers appear first)', type: 'number', initialValue: 0 }),
+    defineField({ name: 'featured', title: 'Featured Experience?', type: 'boolean', initialValue: true }),
     defineField({ name: 'published', title: 'Published?', type: 'boolean', initialValue: true }),
+    defineField({ name: 'themeColor', title: 'Theme Accent Color (hex or CSS color)', type: 'string', placeholder: '#22c55e' }),
   ],
   preview: {
     select: { title: 'role', subtitle: 'company', media: 'companyLogo' },
@@ -60,5 +82,8 @@ export const experience = defineType({
       return { title, subtitle: `@ ${subtitle}`, media };
     },
   },
-  orderings: [{ title: 'Display Order', name: 'displayOrderAsc', by: [{ field: 'displayOrder', direction: 'asc' }] }],
+  orderings: [
+    { title: 'Display Order', name: 'displayOrderAsc', by: [{ field: 'displayOrder', direction: 'asc' }] },
+    { title: 'Start Date Latest', name: 'startDateDesc', by: [{ field: 'startDate', direction: 'desc' }] },
+  ],
 });

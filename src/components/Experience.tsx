@@ -2,37 +2,48 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, CheckCircle2, Sparkles, Code, Cpu, ChevronDown, ExternalLink, Calendar, MapPin, Building2, Check } from "lucide-react";
+import { Briefcase, CheckCircle2, Sparkles, Code, Cpu, ChevronDown, ExternalLink, Calendar, MapPin, Building2, Award } from "lucide-react";
 import type { SanityExperience } from "@/sanity/types";
 
 interface ExperienceProps {
   experiences: SanityExperience[];
 }
 
-const DEFAULT_MODULES = [
-  { name: "Expense Management System", desc: "Automated claim submission, audit trail logs, multi-currency processing" },
-  { name: "Salary Deduction Engine", desc: "Enterprise payroll calculation logic integrating biometric attendance & loan logic" },
-  { name: "Invoice Automation", desc: "Dynamic vector PDF billing report generator and automated dispatch system" },
-  { name: "Audit Dashboard", desc: "Real-time query performance optimized data visualizer for corporate accounting" },
-  { name: "Employee Management", desc: "Role-based access matrix and profile database with status tracking" },
-  { name: "Excel Automation", desc: "High-volume bulk Excel parsing and automated financial data validation tools" },
-];
-
 export default function Experience({ experiences }: ExperienceProps) {
-  // Select first experience as default active/expanded card
-  const initialActiveId = experiences[0]?._id || experiences[0]?.id || "exp-0";
+  // Always default active selection to the first (newest/highest displayOrder) experience
+  const initialActiveId = experiences && experiences.length > 0 ? (experiences[0]._id || experiences[0].id || "exp-0") : "";
   const [activeId, setActiveId] = useState<string>(initialActiveId);
 
+  // Empty State: if no experiences exist in Sanity
   if (!experiences || experiences.length === 0) {
     return (
       <section id="experience" className="py-28 relative">
-        <div className="w-[92%] max-w-7xl mx-auto text-center text-gray-500 py-20 font-mono text-sm">
-          No experience data available yet.
+        <div className="w-[92%] max-w-7xl mx-auto">
+          <div className="flex flex-col mb-12">
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <span>03 / WORK EXPERIENCE</span>
+            </div>
+            <h2 className="text-4xl sm:text-6xl font-bold font-space tracking-tight text-white uppercase">
+              ENTERPRISE <span className="text-stroke-outline">EXPERIENCE</span>
+            </h2>
+          </div>
+
+          <div className="glass-card rounded-3xl p-16 border border-white/10 text-center flex flex-col items-center justify-center space-y-4 bg-[#0c0c0e]/80">
+            <div className="p-4 rounded-full bg-white/5 border border-white/10 text-gray-400">
+              <Briefcase className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold font-space text-white">No experience added yet.</h3>
+            <p className="text-xs font-mono text-gray-400 max-w-sm">
+              Add your work experiences and internships in Sanity Studio to feature them here.
+            </p>
+          </div>
         </div>
       </section>
     );
   }
 
+  // Gracefully fallback to experiences[0] if the active document is deleted or unpublished in Sanity
   const activeExp = experiences.find((e) => (e._id || e.id) === activeId) || experiences[0];
 
   return (
@@ -43,14 +54,14 @@ export default function Experience({ experiences }: ExperienceProps) {
         <div className="flex flex-col mb-14">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-white" />
-            <span>03 / WORK EXPERIENCE & INTERNSHIPS</span>
+            <span>03 / SANITY CMS WORK EXPERIENCE</span>
           </div>
           <h2 className="text-4xl sm:text-6xl font-bold font-space tracking-tight text-white uppercase">
             ENTERPRISE <span className="text-stroke-outline">EXPERIENCE</span>
           </h2>
         </div>
 
-        {/* Top View: Currently Expanded Active Experience Showcase Card */}
+        {/* Top View: Currently Expanded Showcase Experience Card */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeExp._id || activeExp.id || activeExp.company}
@@ -63,7 +74,12 @@ export default function Experience({ experiences }: ExperienceProps) {
             {/* Top Header Banner */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-white/10">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold font-space text-xl shrink-0 shadow-lg">
+                <div
+                  style={{
+                    borderColor: activeExp.themeColor || "rgba(255, 255, 255, 0.2)",
+                  }}
+                  className="w-14 h-14 rounded-2xl bg-white/10 border flex items-center justify-center text-white font-bold font-space text-xl shrink-0 shadow-lg"
+                >
                   {activeExp.logoUrl ? (
                     <img src={activeExp.logoUrl} alt={activeExp.company} className="w-full h-full object-cover rounded-2xl" />
                   ) : (
@@ -79,9 +95,14 @@ export default function Experience({ experiences }: ExperienceProps) {
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/15">
                       {activeExp.employmentType || "Internship"}
                     </span>
+                    {activeExp.remote && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        Remote
+                      </span>
+                    )}
                     {activeExp.currentJob && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        Current Role
+                        Current Position
                       </span>
                     )}
                   </div>
@@ -96,52 +117,85 @@ export default function Experience({ experiences }: ExperienceProps) {
                   <Calendar className="w-3.5 h-3.5 text-white/60" />
                   <span>{activeExp.period || `${activeExp.startDate ?? ''} – ${activeExp.endDate ?? ''}`}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-gray-400 pl-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>{activeExp.location || "Remote"}</span>
+                {activeExp.location && (
+                  <div className="flex items-center gap-1.5 text-gray-400 pl-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{activeExp.location}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Short Overview (if provided in Sanity) */}
+            {activeExp.shortDescription && (
+              <p className="text-xs sm:text-sm text-gray-300 font-sans leading-relaxed mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                {activeExp.shortDescription}
+              </p>
+            )}
+
+            {/* Core Modules Engineered (100% Dynamic from Sanity) */}
+            {activeExp.coreModules && activeExp.coreModules.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-white" />
+                  Core Modules Engineered & Built:
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeExp.coreModules.map((mod, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/25 transition-all group"
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-white shrink-0 group-hover:scale-110 transition-transform" />
+                        <h5 className="font-bold text-white text-xs tracking-tight">{mod.title}</h5>
+                      </div>
+                      {mod.description && (
+                        <p className="text-[11px] text-gray-400 leading-relaxed pl-6">{mod.description}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Core Engineered Modules */}
-            <div className="mb-8">
-              <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-white" />
-                Core Modules Engineered & Built:
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {DEFAULT_MODULES.map((mod) => (
-                  <div
-                    key={mod.name}
-                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/25 transition-all group"
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-white shrink-0 group-hover:scale-110 transition-transform" />
-                      <h5 className="font-bold text-white text-xs tracking-tight">{mod.name}</h5>
+            {/* Key Impact & Responsibilities List (from Sanity) */}
+            {activeExp.responsibilities && activeExp.responsibilities.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-white" />
+                  Key Impact & Responsibilities:
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {activeExp.responsibilities.map((resp, i) => (
+                    <div key={i} className="flex items-start gap-2.5 text-xs text-gray-300 leading-relaxed p-2.5 rounded-xl bg-white/[0.01] border border-white/5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/60 mt-1.5 shrink-0" />
+                      <span>{resp}</span>
                     </div>
-                    <p className="text-[11px] text-gray-400 leading-relaxed pl-6">{mod.desc}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Impact & Key Responsibilities List */}
-            <div className="mb-8">
-              <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-white" />
-                Key Impact & Responsibilities:
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {(activeExp.responsibilities ?? []).map((resp, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-xs text-gray-300 leading-relaxed p-2.5 rounded-xl bg-white/[0.01] border border-white/5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/60 mt-1.5 shrink-0" />
-                    <span>{resp}</span>
-                  </div>
-                ))}
+            {/* Key Achievements (from Sanity) */}
+            {activeExp.achievements && activeExp.achievements.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  Key Achievements:
+                </h4>
+                <div className="space-y-2">
+                  {activeExp.achievements.map((ach, i) => (
+                    <div key={i} className="flex items-center gap-2.5 text-xs text-amber-200/90 p-2.5 rounded-xl bg-amber-500/[0.03] border border-amber-500/10">
+                      <Award className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>{ach}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Technologies Used & Website Link */}
+            {/* Technologies Used & Website Link (from Sanity) */}
             <div className="pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-mono text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-1">
@@ -172,19 +226,19 @@ export default function Experience({ experiences }: ExperienceProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Bottom Timeline List: All Experiences Accordion Stack */}
+        {/* Bottom Timeline Accordion Stack (only shown if 2+ experiences exist) */}
         {experiences.length > 1 && (
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10">
             <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-white" />
-              All Experiences & Timeline ({experiences.length})
+              All Timeline Experiences ({experiences.length})
             </h3>
 
-            {/* Scrollable Container for Infinite Experiences Sizing */}
+            {/* Scrollable Container for Infinite Sizing */}
             <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
               {experiences.map((expItem, idx) => {
                 const id = expItem._id || expItem.id || `exp-${idx}`;
-                const isActive = id === activeId;
+                const isActive = id === (activeExp._id || activeExp.id);
                 const periodText = expItem.period || `${expItem.startDate ?? ''} – ${expItem.endDate ?? ''}`;
 
                 return (
