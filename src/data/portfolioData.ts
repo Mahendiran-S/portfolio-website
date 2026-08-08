@@ -195,6 +195,7 @@ export const PROJECTS: Project[] = [
       "AI Event Assistant: Natural language queries for event schedules and details"
     ],
     architecture: "React (Vite) Frontend + Supabase/Firebase Backend + Tailwind CSS + QR Code Engine",
+    imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: "portfolio-website",
@@ -215,6 +216,7 @@ export const PROJECTS: Project[] = [
       "PDF Resume Viewer: Interactive modal with zoom and download capabilities"
     ],
     architecture: "Next.js 15 App Router + Sanity CMS + Tailwind CSS + Vercel Deployment",
+    imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
   },
 ];
 

@@ -84,21 +84,34 @@ export default function Projects({ projects }: ProjectsProps) {
               >
                 {/* Image Preview Container */}
                 <div className="relative h-56 overflow-hidden border-b border-white/10 bg-[#0d0d0f]">
-                  {isImageFailed ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-white/[0.02]">
-                      <Sparkles className="w-8 h-8 text-gray-500 mb-2" />
-                      <span className="font-mono text-xs font-bold text-white uppercase">{project.title}</span>
-                      <span className="text-[10px] text-gray-500 font-mono mt-1">Image Preview Unavailable</span>
-                    </div>
-                  ) : (
-                    <img
-                      src={project.thumbnailUrl ?? project.imageUrl ?? ''}
-                      alt={`Screenshot preview of ${project.title}`}
-                      loading="lazy"
-                      onError={() => handleImageError(projectId)}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 group-hover:brightness-100"
-                    />
-                  )}
+                  {(() => {
+                    const defaultFallbackImg = projectId === 'bookmyevent'
+                      ? 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'
+                      : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
+
+                    const imgSrc = (project.thumbnailUrl && project.thumbnailUrl.trim() !== '') 
+                      ? project.thumbnailUrl 
+                      : (project.imageUrl && project.imageUrl.trim() !== '') 
+                        ? project.imageUrl 
+                        : defaultFallbackImg;
+
+                    return isImageFailed ? (
+                      <img
+                        src={defaultFallbackImg}
+                        alt={project.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 group-hover:brightness-100"
+                      />
+                    ) : (
+                      <img
+                        src={imgSrc}
+                        alt={`Screenshot preview of ${project.title}`}
+                        loading="lazy"
+                        onError={() => handleImageError(projectId)}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 group-hover:brightness-100"
+                      />
+                    );
+                  })()}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent opacity-80" />
                   
                   {/* Category & Status Pill */}
