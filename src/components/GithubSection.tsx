@@ -145,28 +145,43 @@ export default function GithubSection() {
                 </div>
 
                 {/* Stat Cards Row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-white/10 text-center">
-                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                    <div className="text-xl font-bold font-space text-white">{telemetry?.totalContributions ?? 480}</div>
-                    <div className="text-[10px] font-mono text-gray-400">Total Commits</div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/10 text-center">
+                  <div className="p-5 rounded-2xl glass-card border border-white/10 text-center group hover:border-white/30 transition-all flex flex-col justify-center">
+                    <div className="text-3xl sm:text-4xl font-black font-space text-white mb-1 group-hover:scale-110 transition-transform">
+                      {telemetry?.totalContributions ?? 480}
+                    </div>
+                    <div className="text-xs text-gray-400 font-mono leading-tight uppercase tracking-wider">
+                      COMMITS '26
+                    </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                    <div className="text-xl font-bold font-space text-emerald-400 flex items-center justify-center gap-1">
+
+                  <div className="p-5 rounded-2xl glass-card border border-white/10 text-center group hover:border-white/30 transition-all flex flex-col justify-center">
+                    <div className="text-3xl sm:text-4xl font-black font-space text-emerald-400 mb-1 group-hover:scale-110 transition-transform flex items-center justify-center gap-1">
                       <span>{telemetry?.currentStreak ?? 7}</span>
-                      <Flame className="w-4 h-4 text-emerald-400" />
+                      <Flame className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <div className="text-[10px] font-mono text-gray-400">Current Streak</div>
+                    <div className="text-xs text-gray-400 font-mono leading-tight uppercase tracking-wider">
+                      CURRENT STREAK
+                    </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                    <div className="text-xl font-bold font-space text-amber-400 flex items-center justify-center gap-1">
+
+                  <div className="p-5 rounded-2xl glass-card border border-white/10 text-center group hover:border-white/30 transition-all flex flex-col justify-center">
+                    <div className="text-3xl sm:text-4xl font-black font-space text-amber-400 mb-1 group-hover:scale-110 transition-transform flex items-center justify-center gap-1">
                       <span>{telemetry?.longestStreak ?? 21}</span>
-                      <Zap className="w-4 h-4 text-amber-400" />
+                      <Zap className="w-5 h-5 text-amber-400" />
                     </div>
-                    <div className="text-[10px] font-mono text-gray-400">Longest Streak</div>
+                    <div className="text-xs text-gray-400 font-mono leading-tight uppercase tracking-wider">
+                      LONGEST STREAK
+                    </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                    <div className="text-xl font-bold font-space text-white">{telemetry?.reposCount ?? profile.publicRepos}</div>
-                    <div className="text-[10px] font-mono text-gray-400">Repositories</div>
+
+                  <div className="p-5 rounded-2xl glass-card border border-white/10 text-center group hover:border-white/30 transition-all flex flex-col justify-center">
+                    <div className="text-3xl sm:text-4xl font-black font-space text-white mb-1 group-hover:scale-110 transition-transform">
+                      {telemetry?.reposCount ?? profile.publicRepos}
+                    </div>
+                    <div className="text-xs text-gray-400 font-mono leading-tight uppercase tracking-wider">
+                      REPOSITORIES
+                    </div>
                   </div>
                 </div>
               </>
