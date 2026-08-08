@@ -59,7 +59,7 @@ export const HERO_DATA = {
   name: "MAHENDIRAN S",
   role: "Software Developer",
   tagline: "FULL-STACK SOFTWARE DEVELOPER",
-  email: "mahendiran.dev@gmail.com",
+  email: "mahendirans002@gmail.com",
   phone: "+91 98765 43210",
   location: "TAMIL NADU, INDIA",
   bio: "Information Technology student at Mahendra Engineering College. Crafting high-performance, scalable web applications with React, Next.js, Node.js, Express, Java, and modern cloud technologies.",
@@ -68,7 +68,7 @@ export const HERO_DATA = {
     github: "https://github.com/Mahendiran-S",
     linkedin: "https://linkedin.com/in/mahendiran-s",
     instagram: "https://instagram.com/mahendiran_dev",
-    email: "mailto:mahendiran.dev@gmail.com",
+    email: "mailto:mahendirans002@gmail.com",
     phone: "tel:+919876543210",
   },
   stats: [
