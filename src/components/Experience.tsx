@@ -201,9 +201,9 @@ export default function Experience({ experiences }: ExperienceProps) {
                 <span className="text-xs font-mono text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-1">
                   <Code className="w-3.5 h-3.5" /> Stack:
                 </span>
-                {(activeExp.technologies ?? []).map((tech) => (
+                {(activeExp.technologies ?? []).map((tech, idx) => (
                   <span
-                    key={tech}
+                    key={`${tech}-${idx}`}
                     className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/10 text-white border border-white/15"
                   >
                     {tech}

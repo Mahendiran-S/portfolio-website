@@ -124,7 +124,7 @@ export default function About({ profile }: AboutProps) {
               className="p-6 rounded-2xl glass-card border border-white/10 text-center group hover:border-white/30 transition-all"
             >
               <div className="text-3xl sm:text-4xl font-black font-space text-white mb-2 group-hover:scale-110 transition-transform">
-                {stat.value}{stat.suffix}
+                {stat.value}{(stat as any).suffix ?? ''}
               </div>
               <div className="text-xs text-gray-400 font-mono leading-tight">
                 {stat.label}
@@ -167,7 +167,7 @@ export default function About({ profile }: AboutProps) {
           <div className="space-y-8 relative before:absolute before:inset-0 before:left-3.5 md:before:left-5 before:w-0.5 before:bg-white/10">
             {filteredTimeline.map((item, idx) => (
               <motion.div
-                key={item.title}
+                key={`${item.title}-${item.institution}-${idx}`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
