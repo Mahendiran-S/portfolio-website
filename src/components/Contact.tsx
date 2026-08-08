@@ -195,18 +195,33 @@ export default function Contact({ onOpenResume, profile }: ContactProps) {
       setIsSubmitting(false);
       setIsSubmitted(true);
       setLastSubmissionTime(Date.now());
+
+      const targetEmail = profile.email || "mahendirans002@gmail.com";
+      const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(
+        sanitizedData.subject
+      )}&body=${encodeURIComponent(
+        `Name: ${sanitizedData.name}\nEmail: ${sanitizedData.email}\n\nMessage:\n${sanitizedData.message}`
+      )}`;
+
       setToastMessage({
         type: "success",
-        text: `Thank you ${sanitizedData.name}! Your message has been sent successfully.`,
+        text: `Thank you ${sanitizedData.name}! Opening your mail app to send directly to ${targetEmail}...`,
       });
+
+      // Launch mail composer directly
+      try {
+        window.open(mailtoUrl, "_blank");
+      } catch (err) {
+        window.location.href = mailtoUrl;
+      }
 
       // Confetti Explosion
       try {
         confetti({
-          particleCount: 90,
-          spread: 80,
-          origin: { y: 0.65 },
-          colors: ["#ffffff", "#9ca3af", "#6366f1", "#10b981"],
+          particleCount: 100,
+          spread: 90,
+          origin: { y: 0.6 },
+          colors: ["#ffffff", "#34d399", "#60a5fa", "#f59e0b"],
         });
       } catch (e) {
         // Fallback
@@ -216,38 +231,42 @@ export default function Contact({ onOpenResume, profile }: ContactProps) {
       setErrors({});
       setTouched({});
       generateCaptcha();
-    }, 1200);
+    }, 800);
   };
+
+  const targetEmail = profile.email || 'mahendirans002@gmail.com';
+  const targetPhone = profile.phone || '+91 86107 74327';
+  const targetInsta = profile.instagramUrl || 'https://www.instagram.com/toxin_artist_0210/';
 
   const contactCards = [
     {
       label: "Email Direct",
-      value: profile.email ?? 'mahendirans002@gmail.com',
-      href: `mailto:${profile.email ?? ''}`,
+      value: targetEmail,
+      href: `mailto:${targetEmail}`,
       icon: <Mail className="w-5 h-5 text-white" />,
     },
     {
       label: "LinkedIn Profile",
       value: "linkedin.com/in/mahendiran-s",
-      href: profile.linkedinUrl ?? '#',
+      href: profile.linkedinUrl || 'https://linkedin.com/in/mahendiran-s',
       icon: <LinkedinIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "GitHub Account",
       value: "github.com/Mahendiran-S",
-      href: profile.githubUrl ?? '#',
+      href: profile.githubUrl || 'https://github.com/Mahendiran-S',
       icon: <GithubIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "Instagram",
       value: "@toxin_artist_0210",
-      href: profile.instagramUrl ?? '#',
+      href: targetInsta,
       icon: <InstagramIcon className="w-5 h-5 text-white" />,
     },
     {
       label: "Phone / WhatsApp",
-      value: profile.phone ?? '+91 86107 74327',
-      href: `tel:${profile.phone ?? ''}`,
+      value: targetPhone,
+      href: `tel:${targetPhone.replace(/\s+/g, '')}`,
       icon: <Phone className="w-5 h-5 text-white" />,
     },
     {
